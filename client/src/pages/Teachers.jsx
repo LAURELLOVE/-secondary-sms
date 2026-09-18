@@ -119,6 +119,7 @@ export default function Teachers() {
             <div className="tab-content">
               {[
                 ['Phone', detail.phone],
+                ['Access code', detail.accessCode || 'Not available — click Regenerate code above'],
                 ['Gender', detail.gender],
                 ['Date of birth', detail.dateOfBirth],
                 ['Address', detail.address],
@@ -131,7 +132,9 @@ export default function Teachers() {
               ].map(([label, value]) => (
                 <div className="info-row" key={label}>
                   <span className="info-label">{label}</span>
-                  <span>{value || '—'}</span>
+                  <span style={label === 'Access code' ? { fontFamily: 'monospace', letterSpacing: '0.08em', fontWeight: 700 } : undefined}>
+                    {value || '—'}
+                  </span>
                 </div>
               ))}
             </div>

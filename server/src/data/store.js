@@ -185,6 +185,7 @@ export const TeacherStore = {
       id: randomUUID(),
       status: 'active',
       ...data,
+      accessCode,
       accessCodeHash: bcrypt.hashSync(accessCode, 10),
     };
     await col('teachers').insertOne(teacher);
@@ -197,7 +198,7 @@ export const TeacherStore = {
     const accessCode = generateAccessCode();
     const teacher = await col('teachers').findOneAndUpdate(
       { id },
-      { $set: { accessCodeHash: bcrypt.hashSync(accessCode, 10) } },
+      { $set: { accessCode, accessCodeHash: bcrypt.hashSync(accessCode, 10) } },
       { returnDocument: 'after', projection: { _id: 0 } }
     );
     if (!teacher) return null;

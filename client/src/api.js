@@ -11,11 +11,15 @@ function authHeader() {
 }
 
 async function request(path, options = {}) {
+  const hadToken = Boolean(localStorage.getItem('sms_token'));
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     ...options,
   });
-  if (res.status === 401) {
+  // Only treat a 401 as "session expired" when a token was actually sent -
+  // a login attempt with no token yet returning 401 just means wrong
+  // credentials, not an expired session.
+  if (res.status === 401 && hadToken) {
     localStorage.removeItem('sms_token');
     localStorage.removeItem('sms_role');
     localStorage.removeItem('sms_user');
