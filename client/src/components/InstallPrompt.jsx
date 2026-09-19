@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const isStandalone = () =>
+  window.Capacitor?.isNativePlatform?.() ||
   window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIos = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 

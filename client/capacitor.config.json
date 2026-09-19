@@ -1,0 +1,9 @@
+{
+  "appId": "com.school.sms",
+  "appName": "School SMS",
+  "webDir": "dist",
+  "backgroundColor": "#faf6f0",
+  "android": {
+    "allowMixedContent": false
+  }
+}

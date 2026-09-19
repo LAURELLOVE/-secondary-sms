@@ -16,6 +16,7 @@ createRoot(document.getElementById('root')).render(
 )
 
 // Installable app: register the service worker in production builds only, so it never interferes with dev hot-reload.
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// (The Android app bundles its own files, so it skips this.)
+if ('serviceWorker' in navigator && import.meta.env.PROD && !window.Capacitor?.isNativePlatform?.()) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
