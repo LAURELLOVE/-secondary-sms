@@ -9,7 +9,7 @@ import studentsRouter from './routes/students.js';
 import gradesRouter from './routes/grades.js';
 import feesRouter from './routes/fees.js';
 import teachersRouter from './routes/teachers.js';
-import { isSmsLive, activeSmsProvider } from './services/sms/index.js';
+import { isSmsLive, activeSmsProvider, smsDebug } from './services/sms/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -17,7 +17,9 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', smsLive: isSmsLive, smsProvider: activeSmsProvider }));
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'ok', smsLive: isSmsLive, smsProvider: activeSmsProvider, smsDebug })
+);
 
 app.use('/api/auth', authRouter);
 app.use('/api/students', studentsRouter);

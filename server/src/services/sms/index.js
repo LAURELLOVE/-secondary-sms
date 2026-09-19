@@ -2,16 +2,30 @@ import { sendSmsViaNexah } from './nexahProvider.js';
 import { sendSmsViaTwilio } from './twilioProvider.js';
 import { sendSmsViaMock } from './mockProvider.js';
 
-const {
-  NEXAH_USER, NEXAH_PASSWORD, NEXAH_SENDER_ID,
-  TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER,
-} = process.env;
+// Values pasted into a hosting dashboard often pick up stray whitespace or
+// wrapping quotes/backticks; strip those so credentials still match exactly.
+const clean = (value) => (value || '').trim().replace(/^[`'"]+|[`'"]+$/g, '').trim();
+
+const NEXAH_USER = clean(process.env.NEXAH_USER);
+const NEXAH_PASSWORD = clean(process.env.NEXAH_PASSWORD);
+const NEXAH_SENDER_ID = clean(process.env.NEXAH_SENDER_ID);
+const TWILIO_ACCOUNT_SID = clean(process.env.TWILIO_ACCOUNT_SID);
+const TWILIO_AUTH_TOKEN = clean(process.env.TWILIO_AUTH_TOKEN);
+const TWILIO_FROM_NUMBER = clean(process.env.TWILIO_FROM_NUMBER);
 
 const nexahConfigured = Boolean(NEXAH_USER && NEXAH_PASSWORD && NEXAH_SENDER_ID);
 const twilioConfigured = Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER);
 
 export const isSmsLive = nexahConfigured || twilioConfigured;
 export const activeSmsProvider = nexahConfigured ? 'nexah' : twilioConfigured ? 'twilio' : 'mock';
+
+// Lengths only (never the values) - a Twilio SID is 34 chars, auth token 32.
+export const smsDebug = {
+  twilioSidLength: TWILIO_ACCOUNT_SID.length,
+  twilioTokenLength: TWILIO_AUTH_TOKEN.length,
+  twilioFromLength: TWILIO_FROM_NUMBER.length,
+  twilioSidPrefix: TWILIO_ACCOUNT_SID.slice(0, 2),
+};
 
 export async function sendSms(mobile, message) {
   if (nexahConfigured) {
