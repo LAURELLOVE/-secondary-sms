@@ -502,3 +502,7 @@ button { font-family: inherit; }
   border-bottom: 1px solid var(--color-warning);
   font-size: 14px;
 }
+
+/* Install-as-app prompt */
+.install-prompt { text-align: center; margin-top: 8px; }
+.install-help { max-width: 320px; margin: 10px auto 0; font-size: 13px; }

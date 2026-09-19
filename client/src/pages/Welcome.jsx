@@ -1,5 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import InstallPrompt from '../components/InstallPrompt';
 
 export default function Welcome() {
   const { token, role } = useAuth();
@@ -25,6 +26,7 @@ export default function Welcome() {
           <p>Sign in with your phone to enter CA and exam marks</p>
         </Link>
       </div>
+      <InstallPrompt />
     </div>
   );
 }

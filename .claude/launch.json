@@ -4,14 +4,39 @@
     {
       "name": "server",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "server"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "server"
+      ],
       "port": 4000
     },
     {
       "name": "client",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "client"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "client"
+      ],
       "port": 5173
+    },
+    {
+      "name": "client-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--prefix",
+        "client",
+        "--",
+        "--port",
+        "4173",
+        "--host"
+      ],
+      "port": 4173
     }
   ]
 }
