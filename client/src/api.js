@@ -34,6 +34,42 @@ async function request(path, options = {}) {
   return res.json();
 }
 
+// Authenticated file download (a plain link can't send the auth header).
+export async function downloadFile(path, filename) {
+  const res = await fetch(`${BASE_URL}${path}`, { headers: authHeader() });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Download failed: ${res.status}`);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+const qs = (params) => {
+  const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== ''));
+  const s = q.toString();
+  return s ? `?${s}` : '';
+};
+
+export const AttendanceApi = {
+  sheet: (className, section, date) => request(`/attendance/class${qs({ className, section, date })}`),
+  save: (data) => request('/attendance/class', { method: 'PUT', body: JSON.stringify(data) }),
+  summary: (params) => request(`/attendance/summary${qs(params)}`),
+  forStudent: (id) => request(`/attendance/student/${id}`),
+};
+
+export const AdminsApi = {
+  list: () => request('/admins'),
+  create: (data) => request('/admins', { method: 'POST', body: JSON.stringify(data) }),
+  remove: (id) => request(`/admins/${id}`, { method: 'DELETE' }),
+  changePassword: (currentPassword, newPassword) =>
+    request('/admins/me/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
+};
+
 export const AuthApi = {
   adminLogin: (username, password) =>
     request('/auth/admin/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
@@ -67,6 +103,10 @@ export const StudentsApi = {
 };
 
 export const GradesApi = {
+  fullReport: (studentId, term, academicYear) =>
+    request(`/grades/report-card/${studentId}${qs({ term, academicYear })}`),
+  exportCsv: (term, academicYear, className) =>
+    downloadFile(`/grades/export${qs({ term, academicYear, className })}`, 'grades.csv'),
   reportCard: (studentId, term, academicYear) =>
     request(`/grades/student/${studentId}?term=${encodeURIComponent(term)}&academicYear=${encodeURIComponent(academicYear)}`),
   create: (data) => request('/grades', { method: 'POST', body: JSON.stringify(data) }),
@@ -75,6 +115,7 @@ export const GradesApi = {
 };
 
 export const FeesApi = {
+  exportCsv: () => downloadFile('/fees/export', 'fees.csv'),
   all: () => request('/fees'),
   forStudent: (studentId) => request(`/fees/student/${studentId}`),
   create: (data) => request('/fees', { method: 'POST', body: JSON.stringify(data) }),

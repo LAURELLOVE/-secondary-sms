@@ -13,8 +13,11 @@ const TWILIO_ACCOUNT_SID = clean(process.env.TWILIO_ACCOUNT_SID);
 const TWILIO_AUTH_TOKEN = clean(process.env.TWILIO_AUTH_TOKEN);
 const TWILIO_FROM_NUMBER = clean(process.env.TWILIO_FROM_NUMBER);
 
-const nexahConfigured = Boolean(NEXAH_USER && NEXAH_PASSWORD && NEXAH_SENDER_ID);
-const twilioConfigured = Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER);
+// SMS_PROVIDER=mock forces on-screen OTPs without having to delete credentials.
+const forceMock = clean(process.env.SMS_PROVIDER).toLowerCase() === 'mock';
+
+const nexahConfigured = !forceMock && Boolean(NEXAH_USER && NEXAH_PASSWORD && NEXAH_SENDER_ID);
+const twilioConfigured = !forceMock && Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER);
 
 export const isSmsLive = nexahConfigured || twilioConfigured;
 export const activeSmsProvider = nexahConfigured ? 'nexah' : twilioConfigured ? 'twilio' : 'mock';

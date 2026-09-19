@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { FeeStore, feeTotals } from '../data/store.js';
+import { FeeStore, StudentStore, feeTotals } from '../data/store.js';
 import { requireAuth } from '../middleware/auth.js';
+import { toCsv, sendCsv } from '../utils/csv.js';
 
 const router = Router();
 
@@ -11,6 +12,28 @@ function serialize(fee) {
 
 router.get('/', requireAuth('admin'), async (req, res) => {
   res.json((await FeeStore.all()).map(serialize));
+});
+
+router.get('/export', requireAuth('admin'), async (req, res) => {
+  const students = await StudentStore.all();
+  const byId = new Map(students.map((s) => [s.id, s]));
+  const rows = (await FeeStore.all()).map((f) => {
+    const s = byId.get(f.studentId) || {};
+    const { amountPaid, balance } = feeTotals(f);
+    return [
+      s.fullName, s.admissionNumber, s.className, s.section, s.branch,
+      f.academicYear, f.term, f.amountDue, amountPaid, balance, balance <= 0 ? 'Paid' : 'Owing',
+    ];
+  });
+  sendCsv(
+    res,
+    'fees.csv',
+    toCsv(
+      ['Student', 'Admission No', 'Class', 'Section', 'Branch', 'Academic Year', 'Term',
+        'Amount Due (FCFA)', 'Amount Paid (FCFA)', 'Balance (FCFA)', 'Status'],
+      rows
+    )
+  );
 });
 
 router.get('/student/:studentId', requireAuth('admin'), async (req, res) => {

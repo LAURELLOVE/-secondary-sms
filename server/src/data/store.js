@@ -105,6 +105,7 @@ export const StudentStore = {
     await Promise.all(grades.map((g) => GradeStore.remove(g.id)));
     const fees = await col('fees').find({ studentId: id }, NO_ID).toArray();
     await Promise.all(fees.map((f) => FeeStore.remove(f.id)));
+    await AttendanceStore.removeForStudent(id);
     return true;
   },
 };
@@ -235,12 +236,56 @@ export const AssignmentStore = {
 
 // ---- Admins ----
 export const AdminStore = {
+  all: () => col('admins').find({}, NO_ID).toArray(),
+  count: () => col('admins').countDocuments(),
+  find: (id) => col('admins').findOne({ id }, NO_ID),
   findByUsername: (username) => col('admins').findOne({ username }, NO_ID),
+  create: async ({ username, fullName, password }) => {
+    const admin = { id: randomUUID(), username, fullName, passwordHash: bcrypt.hashSync(password, 10) };
+    await col('admins').insertOne(admin);
+    delete admin._id;
+    return admin;
+  },
+  updatePassword: (id, password) =>
+    col('admins').updateOne({ id }, { $set: { passwordHash: bcrypt.hashSync(password, 10) } }),
+  remove: async (id) => {
+    const { deletedCount } = await col('admins').deleteOne({ id });
+    return deletedCount > 0;
+  },
   verifyPassword: (admin, password) => bcrypt.compareSync(password, admin.passwordHash),
   sanitize: (admin) => {
     const { passwordHash, ...rest } = admin;
     return rest;
   },
+};
+
+// ---- Attendance: one document per class + section + date ----
+export const AttendanceStore = {
+  forClassDate: (className, section, date) => col('attendance').findOne({ className, section, date }, NO_ID),
+  upsert: async ({ className, section, date, records, markedBy }) => {
+    await col('attendance').updateOne(
+      { className, section, date },
+      {
+        $set: { records, markedBy, updatedAt: new Date().toISOString() },
+        $setOnInsert: { id: randomUUID() },
+      },
+      { upsert: true }
+    );
+    return col('attendance').findOne({ className, section, date }, NO_ID);
+  },
+  list: ({ className, section, from, to } = {}) => {
+    const query = {};
+    if (className) query.className = className;
+    if (section !== undefined && section !== '') query.section = section;
+    if (from || to) {
+      query.date = {};
+      if (from) query.date.$gte = from;
+      if (to) query.date.$lte = to;
+    }
+    return col('attendance').find(query, NO_ID).toArray();
+  },
+  removeForStudent: (studentId) =>
+    col('attendance').updateMany({}, { $pull: { records: { studentId } } }),
 };
 
 // ---- OTP (in-memory, 5 minute expiry - short-lived, fine to lose on restart) ----

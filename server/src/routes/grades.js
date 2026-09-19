@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { GradeStore, StudentStore, AssignmentStore, gradeTotal, letterGrade } from '../data/store.js';
 import { requireAuth } from '../middleware/auth.js';
+import { toCsv, sendCsv } from '../utils/csv.js';
 
 const router = Router();
 
@@ -48,6 +49,62 @@ function validScores(caScore, examScore) {
 router.get('/student/:studentId', requireAuth('admin', 'teacher'), async (req, res) => {
   const { term, academicYear } = req.query;
   res.json(await reportCard(req.params.studentId, term, academicYear));
+});
+
+// Full report card: the student's results plus their position among classmates
+// (same class, section and branch) ranked by term average.
+router.get('/report-card/:studentId', requireAuth('admin'), async (req, res) => {
+  const { term, academicYear } = req.query;
+  const student = await StudentStore.find(req.params.studentId);
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+
+  const card = await reportCard(student.id, term, academicYear);
+  const everyone = await StudentStore.all();
+  const classmates = everyone.filter(
+    (s) =>
+      s.className === student.className &&
+      (s.section || '') === (student.section || '') &&
+      (s.branch || '') === (student.branch || '')
+  );
+  const ranked = (
+    await Promise.all(
+      classmates.map(async (s) => {
+        const c = await reportCard(s.id, term, academicYear);
+        return { id: s.id, average: c.average, hasResults: c.subjects.length > 0 };
+      })
+    )
+  ).filter((r) => r.hasResults);
+
+  const position = card.subjects.length
+    ? 1 + ranked.filter((r) => r.average > card.average).length
+    : null;
+
+  res.json({ student, ...card, position, classSize: ranked.length });
+});
+
+router.get('/export', requireAuth('admin'), async (req, res) => {
+  const { term, academicYear, className } = req.query;
+  const students = (await StudentStore.all()).filter((s) => !className || s.className === className);
+  const rows = [];
+  for (const s of students) {
+    // eslint-disable-next-line no-await-in-loop
+    const records = await GradeStore.forStudent(s.id, { term, academicYear });
+    records.forEach((g) =>
+      rows.push([
+        s.fullName, s.admissionNumber, s.className, s.section, s.branch, g.academicYear, g.term,
+        g.subject, g.caScore, g.examScore, gradeTotal(g), letterGrade(gradeTotal(g)),
+      ])
+    );
+  }
+  sendCsv(
+    res,
+    'grades.csv',
+    toCsv(
+      ['Student', 'Admission No', 'Class', 'Section', 'Branch', 'Academic Year', 'Term',
+        'Subject', 'CA', 'Exam', 'Total', 'Grade'],
+      rows
+    )
+  );
 });
 
 router.post('/', requireAuth('admin', 'teacher'), async (req, res) => {

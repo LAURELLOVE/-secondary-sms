@@ -50,6 +50,15 @@ export default function Teachers() {
     if (!selectedId && teacherId) setSelectedId(teacherId);
   }
 
+  async function toggleStatus(teacher) {
+    const next = teacher.status === 'active' ? 'inactive' : 'active';
+    const verb = next === 'inactive' ? 'Deactivate' : 'Reactivate';
+    if (!confirm(`${verb} ${teacher.fullName}? ${next === 'inactive' ? 'They will not be able to sign in.' : ''}`)) return;
+    await TeachersApi.update(teacher.id, { status: next });
+    refreshList();
+    TeachersApi.get(teacher.id).then(setDetail);
+  }
+
   async function regenerateCode(teacher) {
     if (!confirm(`Generate a new access code for ${teacher.fullName}? Their current code will stop working.`)) return;
     const { accessCode } = await TeachersApi.regenerateCode(teacher.id);
@@ -109,6 +118,9 @@ export default function Teachers() {
                 <h2 style={{ margin: 0 }}>{detail.fullName}</h2>
               </div>
               <div className="detail-actions">
+                <button className="btn-secondary" onClick={() => toggleStatus(detail)}>
+                  {detail.status === 'active' ? '⏸ Deactivate' : '▶ Reactivate'}
+                </button>
                 <button className="btn-secondary" onClick={() => regenerateCode(detail)}>🔑 Regenerate code</button>
                 <button className="icon-btn" onClick={() => { setEditing(detail); setShowForm(true); }}>✏️</button>
                 <button className="icon-btn" onClick={() => remove(detail.id)}>🗑️</button>

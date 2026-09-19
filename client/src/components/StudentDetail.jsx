@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { GradesApi, FeesApi, ACADEMIC_YEARS, TERMS } from '../api';
+import { GradesApi, FeesApi, AttendanceApi, ACADEMIC_YEARS, TERMS } from '../api';
 import { formatFCFA } from '../currency';
 import GradeForm from './GradeForm';
 import FeeForm from './FeeForm';
 import PaymentForm from './PaymentForm';
+import ReportCard from './ReportCard';
+import Receipt from './Receipt';
 
 export default function StudentDetail({ student, initialTab = 'profile', onEdit, onDelete }) {
   const [tab, setTab] = useState(initialTab);
@@ -20,7 +22,7 @@ export default function StudentDetail({ student, initialTab = 'profile', onEdit,
         </div>
       </div>
       <div className="tabs">
-        {['profile', 'grades', 'fees'].map((t) => (
+        {['profile', 'grades', 'fees', 'attendance'].map((t) => (
           <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -29,6 +31,39 @@ export default function StudentDetail({ student, initialTab = 'profile', onEdit,
       {tab === 'profile' && <ProfileTab student={student} />}
       {tab === 'grades' && <GradesTab student={student} />}
       {tab === 'fees' && <FeesTab student={student} />}
+      {tab === 'attendance' && <AttendanceTab student={student} />}
+    </div>
+  );
+}
+
+function AttendanceTab({ student }) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    AttendanceApi.forStudent(student.id).then(setData);
+  }, [student.id]);
+
+  if (!data) return <div className="tab-content"><p className="muted">Loading...</p></div>;
+  if (data.total === 0) {
+    return <div className="tab-content"><p className="empty">No attendance has been recorded for this student yet</p></div>;
+  }
+
+  return (
+    <div className="tab-content">
+      <div className="summary-card">
+        <span>Present: {data.present}</span>
+        <span>Late: {data.late}</span>
+        <span>Absent: {data.absent}</span>
+        <span>Attendance: {data.rate}%</span>
+      </div>
+      <ul className="list">
+        {data.history.slice(0, 30).map((h) => (
+          <li key={h.date} className="list-row">
+            <span>{h.date}</span>
+            <span className={`chip chip-${h.status}`}>{h.status}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -63,6 +98,7 @@ function GradesTab({ student }) {
   const [report, setReport] = useState({ subjects: [], average: 0, overallGrade: '-' });
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [showCard, setShowCard] = useState(false);
 
   function refresh() {
     GradesApi.reportCard(student.id, term, year).then(setReport);
@@ -96,6 +132,7 @@ function GradesTab({ student }) {
           {TERMS.map((t) => <option key={t}>{t}</option>)}
         </select>
         <div className="spacer" />
+        <button className="btn-secondary" onClick={() => setShowCard(true)}>🖨 Report card</button>
         <button className="btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>+ Add subject score</button>
       </div>
       <div className="summary-card">
@@ -128,11 +165,15 @@ function GradesTab({ student }) {
           onCancel={() => { setShowForm(false); setEditing(null); }}
         />
       )}
+      {showCard && (
+        <ReportCard studentId={student.id} term={term} academicYear={year} onClose={() => setShowCard(false)} />
+      )}
     </div>
   );
 }
 
 function FeesTab({ student }) {
+  const [receipt, setReceipt] = useState(null);
   const [records, setRecords] = useState([]);
   const [showFeeForm, setShowFeeForm] = useState(false);
   const [payingFee, setPayingFee] = useState(null);
@@ -177,7 +218,12 @@ function FeesTab({ student }) {
               <div className="card-body">
                 {r.payments.map((p) => (
                   <div className="payment-row" key={p.id}>
-                    {formatFCFA(p.amount)} • {p.method} — {p.receiptNumber} • {new Date(p.date).toLocaleDateString()}
+                    <span>
+                      {formatFCFA(p.amount)} • {p.method} — {p.receiptNumber} • {new Date(p.date).toLocaleDateString()}
+                    </span>
+                    <button className="btn-secondary" onClick={() => setReceipt({ fee: r, payment: p })}>
+                      🖨 Receipt
+                    </button>
                   </div>
                 ))}
                 <button
@@ -195,6 +241,9 @@ function FeesTab({ student }) {
       {showFeeForm && <FeeForm onSave={addFee} onCancel={() => setShowFeeForm(false)} />}
       {payingFee && (
         <PaymentForm balance={payingFee.balance} onSave={pay} onCancel={() => setPayingFee(null)} />
+      )}
+      {receipt && (
+        <Receipt student={student} fee={receipt.fee} payment={receipt.payment} onClose={() => setReceipt(null)} />
       )}
     </div>
   );

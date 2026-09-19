@@ -45,6 +45,9 @@ export default function FeesOverview() {
             {BRANCHES.map((b) => <option key={b}>{b}</option>)}
           </select>
         )}
+        <button className="btn-secondary" onClick={() => FeesApi.exportCsv().catch((e) => alert(e.message))}>
+          Export CSV
+        </button>
       </div>
       <table className="data-table">
         <thead>

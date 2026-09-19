@@ -51,6 +51,12 @@ export default function GradesOverview() {
         <select value={term} onChange={(e) => setTerm(e.target.value)}>
           {TERMS.map((t) => <option key={t}>{t}</option>)}
         </select>
+        <button
+          className="btn-secondary"
+          onClick={() => GradesApi.exportCsv(term, year, classFilter === 'All' ? undefined : classFilter).catch((e) => alert(e.message))}
+        >
+          Export CSV
+        </button>
       </div>
       <table className="data-table">
         <thead>

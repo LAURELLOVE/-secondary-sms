@@ -9,6 +9,9 @@ import Login from './pages/Login';
 import TeacherLogin from './pages/teacher/TeacherLogin';
 import TeacherHome from './pages/teacher/TeacherHome';
 import MarkEntry from './pages/teacher/MarkEntry';
+import TeacherAttendance from './pages/teacher/Attendance';
+import Attendance from './pages/Attendance';
+import Admins from './pages/Admins';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { useAuth } from './auth/AuthContext';
 
@@ -17,7 +20,9 @@ const NAV_ITEMS = [
   { to: '/students', label: 'Students', icon: '👥' },
   { to: '/grades', label: 'Grades', icon: '⭐' },
   { to: '/fees', label: 'Fees', icon: '💳' },
+  { to: '/attendance', label: 'Attendance', icon: '📅' },
   { to: '/teachers', label: 'Teachers', icon: '🧑‍🏫' },
+  { to: '/admins', label: 'Admins', icon: '🔐' },
 ];
 
 function AdminShell({ children }) {
@@ -89,6 +94,30 @@ export default function App() {
         }
       />
 
+      <Route
+        path="/teacher/attendance"
+        element={
+          <ProtectedRoute role="teacher">
+            <TeacherShell><TeacherAttendance /></TeacherShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/attendance"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminShell><Attendance /></AdminShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admins"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminShell><Admins /></AdminShell>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={

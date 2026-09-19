@@ -9,6 +9,8 @@ import studentsRouter from './routes/students.js';
 import gradesRouter from './routes/grades.js';
 import feesRouter from './routes/fees.js';
 import teachersRouter from './routes/teachers.js';
+import attendanceRouter from './routes/attendance.js';
+import adminsRouter from './routes/admins.js';
 import { isSmsLive, activeSmsProvider, smsDebug } from './services/sms/index.js';
 
 const app = express();
@@ -26,6 +28,8 @@ app.use('/api/students', studentsRouter);
 app.use('/api/grades', gradesRouter);
 app.use('/api/fees', feesRouter);
 app.use('/api/teachers', teachersRouter);
+app.use('/api/attendance', attendanceRouter);
+app.use('/api/admins', adminsRouter);
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {

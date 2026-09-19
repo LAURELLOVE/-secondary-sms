@@ -48,6 +48,17 @@ export default function TeacherHome() {
               >
                 Enter marks
               </button>
+              <button
+                className="btn-secondary"
+                style={{ marginTop: 12, marginLeft: 8 }}
+                onClick={() =>
+                  navigate(
+                    `/teacher/attendance?className=${encodeURIComponent(a.className)}&section=${encodeURIComponent(a.section || '')}`
+                  )
+                }
+              >
+                Take attendance
+              </button>
             </div>
           ))}
         </div>
