@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../auth/AuthContext';
 import { TeachersApi, SERVER_ORIGIN } from '../api';
 import TeacherForm from '../components/TeacherForm';
 import AssignmentForm from '../components/AssignmentForm';
@@ -20,6 +21,8 @@ export default function Teachers() {
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState(null);
   const [revealedCode, setRevealedCode] = useState(null);
+  const [portalError, setPortalError] = useState('');
+  const { startImpersonation } = useAuth();
 
   function refreshList() {
     TeachersApi.list().then(setTeachers);
@@ -49,6 +52,16 @@ export default function Teachers() {
     refreshList();
     if (selectedId) TeachersApi.get(selectedId).then(setDetail);
     if (!selectedId && teacherId) setSelectedId(teacherId);
+  }
+
+  async function openPortal(teacher) {
+    setPortalError('');
+    try {
+      const res = await TeachersApi.impersonate(teacher.id);
+      startImpersonation(res.token, res.role, res.user);
+    } catch (err) {
+      setPortalError(err.message);
+    }
   }
 
   async function toggleStatus(teacher) {
@@ -124,6 +137,7 @@ export default function Teachers() {
                 <h2 style={{ margin: 0 }}>{detail.fullName}</h2>
               </div>
               <div className="detail-actions">
+                <button className="btn-primary" onClick={() => openPortal(detail)}>👁 Open teacher portal</button>
                 <button className="btn-secondary" onClick={() => toggleStatus(detail)}>
                   {detail.status === 'active' ? '⏸ Deactivate' : '▶ Reactivate'}
                 </button>
@@ -133,6 +147,7 @@ export default function Teachers() {
               </div>
             </div>
 
+            {portalError && <p className="error-text">{portalError}</p>}
             <h3 style={{ marginTop: 20 }}>KYC details</h3>
             <div className="tab-content">
               {[

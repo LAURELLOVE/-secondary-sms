@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { TeacherStore, AssignmentStore, StudentStore } from '../data/store.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, signToken } from '../middleware/auth.js';
 import { normalizeCameroonPhone } from '../utils/phone.js';
 
 const router = Router();
@@ -69,6 +69,17 @@ router.delete('/:id', requireAuth('admin'), async (req, res) => {
   const removed = await TeacherStore.remove(req.params.id);
   if (!removed) return res.status(404).json({ error: 'Teacher not found' });
   res.status(204).end();
+});
+
+// Lets an administrator open the teacher portal as a given teacher (no phone/code needed).
+router.post('/:id/impersonate', requireAuth('admin'), async (req, res) => {
+  const teacher = await TeacherStore.find(req.params.id);
+  if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
+  if (teacher.status !== 'active') {
+    return res.status(403).json({ error: 'This teacher account is inactive - reactivate it first' });
+  }
+  const token = signToken({ sub: teacher.id, role: 'teacher', name: teacher.fullName, actingAdmin: req.user.name });
+  res.json({ token, user: TeacherStore.sanitize(teacher), role: 'teacher' });
 });
 
 router.post('/:id/regenerate-code', requireAuth('admin'), async (req, res) => {

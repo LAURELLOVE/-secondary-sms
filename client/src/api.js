@@ -23,6 +23,7 @@ async function request(path, options = {}) {
     localStorage.removeItem('sms_token');
     localStorage.removeItem('sms_role');
     localStorage.removeItem('sms_user');
+    localStorage.removeItem('sms_admin_backup');
     window.location.href = '/login';
     throw new Error('Session expired, please log in again');
   }
@@ -140,6 +141,7 @@ export const TeachersApi = {
   update: (id, data) => request(`/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   remove: (id) => request(`/teachers/${id}`, { method: 'DELETE' }),
   regenerateCode: (id) => request(`/teachers/${id}/regenerate-code`, { method: 'POST' }),
+  impersonate: (id) => request(`/teachers/${id}/impersonate`, { method: 'POST' }),
   uploadPhoto: async (id, file) => {
     const formData = new FormData();
     formData.append('photo', file);

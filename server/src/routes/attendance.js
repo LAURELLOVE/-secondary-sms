@@ -66,7 +66,8 @@ router.put('/class', requireAuth('admin', 'teacher'), async (req, res) => {
   }
 
   const saved = await AttendanceStore.upsert({
-    className, section, date, records: clean, markedBy: req.user.name,
+    className, section, date, records: clean,
+    markedBy: req.user.actingAdmin ? `${req.user.name} (by ${req.user.actingAdmin})` : req.user.name,
   });
   res.json(saved);
 });

@@ -60,8 +60,18 @@ function AdminShell({ children }) {
 }
 
 function TeacherShell({ children }) {
+  const { impersonating, user, stopImpersonation } = useAuth();
+
   return (
     <div className="app-shell">
+      {impersonating && (
+        <div className="preview-banner">
+          <span>Admin preview: you are viewing the portal as <strong>{user?.fullName}</strong></span>
+          <button className="btn-secondary" onClick={stopImpersonation}>
+            ← Back to admin
+          </button>
+        </div>
+      )}
       <header className="app-header">Secondary School Management System — Teacher Portal</header>
       <main className="app-content" style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
         {children}
