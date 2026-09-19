@@ -59,12 +59,17 @@ export const AttendanceApi = {
   sheet: (className, section, date) => request(`/attendance/class${qs({ className, section, date })}`),
   save: (data) => request('/attendance/class', { method: 'PUT', body: JSON.stringify(data) }),
   summary: (params) => request(`/attendance/summary${qs(params)}`),
+  removeDay: (className, section, date) =>
+    request(`/attendance/class${qs({ className, section, date })}`, { method: 'DELETE' }),
   forStudent: (id) => request(`/attendance/student/${id}`),
 };
 
 export const AdminsApi = {
   list: () => request('/admins'),
   create: (data) => request('/admins', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => request(`/admins/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  resetPassword: (id, newPassword) =>
+    request(`/admins/${id}/password`, { method: 'POST', body: JSON.stringify({ newPassword }) }),
   remove: (id) => request(`/admins/${id}`, { method: 'DELETE' }),
   changePassword: (currentPassword, newPassword) =>
     request('/admins/me/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
@@ -119,7 +124,11 @@ export const FeesApi = {
   all: () => request('/fees'),
   forStudent: (studentId) => request(`/fees/student/${studentId}`),
   create: (data) => request('/fees', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => request(`/fees/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   remove: (id) => request(`/fees/${id}`, { method: 'DELETE' }),
+  updatePayment: (feeId, paymentId, data) =>
+    request(`/fees/${feeId}/payments/${paymentId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  removePayment: (feeId, paymentId) => request(`/fees/${feeId}/payments/${paymentId}`, { method: 'DELETE' }),
   addPayment: (feeId, data) => request(`/fees/${feeId}/payments`, { method: 'POST', body: JSON.stringify(data) }),
 };
 
@@ -146,6 +155,8 @@ export const TeachersApi = {
   },
   addAssignment: (teacherId, data) =>
     request(`/teachers/${teacherId}/assignments`, { method: 'POST', body: JSON.stringify(data) }),
+  updateAssignment: (assignmentId, data) =>
+    request(`/teachers/assignments/${assignmentId}`, { method: 'PUT', body: JSON.stringify(data) }),
   removeAssignment: (assignmentId) =>
     request(`/teachers/assignments/${assignmentId}`, { method: 'DELETE' }),
   myProfile: () => request('/teachers/me/profile'),

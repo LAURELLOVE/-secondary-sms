@@ -143,9 +143,26 @@ export const FeeStore = {
     delete fee._id;
     return fee;
   },
+  update: (id, data) =>
+    col('fees').findOneAndUpdate({ id }, { $set: data }, { returnDocument: 'after', projection: { _id: 0 } }),
   remove: async (id) => {
     const { deletedCount } = await col('fees').deleteOne({ id });
     return deletedCount > 0;
+  },
+  removePayment: (feeId, paymentId) =>
+    col('fees').findOneAndUpdate(
+      { id: feeId },
+      { $pull: { payments: { id: paymentId } } },
+      { returnDocument: 'after', projection: { _id: 0 } }
+    ),
+  updatePayment: (feeId, paymentId, data) => {
+    const set = {};
+    Object.entries(data).forEach(([key, value]) => { set[`payments.$[p].${key}`] = value; });
+    return col('fees').findOneAndUpdate(
+      { id: feeId },
+      { $set: set },
+      { arrayFilters: [{ 'p.id': paymentId }], returnDocument: 'after', projection: { _id: 0 } }
+    );
   },
   addPayment: async (feeId, payment) => {
     const record = { id: randomUUID(), ...payment };
@@ -228,6 +245,8 @@ export const AssignmentStore = {
     delete assignment._id;
     return assignment;
   },
+  update: (id, data) =>
+    col('assignments').findOneAndUpdate({ id }, { $set: data }, { returnDocument: 'after', projection: { _id: 0 } }),
   remove: async (id) => {
     const { deletedCount } = await col('assignments').deleteOne({ id });
     return deletedCount > 0;
@@ -246,6 +265,8 @@ export const AdminStore = {
     delete admin._id;
     return admin;
   },
+  update: (id, data) =>
+    col('admins').findOneAndUpdate({ id }, { $set: data }, { returnDocument: 'after', projection: { _id: 0 } }),
   updatePassword: (id, password) =>
     col('admins').updateOne({ id }, { $set: { passwordHash: bcrypt.hashSync(password, 10) } }),
   remove: async (id) => {
@@ -283,6 +304,10 @@ export const AttendanceStore = {
       if (to) query.date.$lte = to;
     }
     return col('attendance').find(query, NO_ID).toArray();
+  },
+  remove: async (className, section, date) => {
+    const { deletedCount } = await col('attendance').deleteOne({ className, section, date });
+    return deletedCount > 0;
   },
   removeForStudent: (studentId) =>
     col('attendance').updateMany({}, { $pull: { records: { studentId } } }),

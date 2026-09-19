@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AttendanceApi } from '../../api';
+import { useAuth } from '../../auth/AuthContext';
 
 const OPTIONS = [
   { value: 'present', label: 'Present' },
@@ -13,6 +14,9 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 export default function TeacherAttendance() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
+  const backTo = isAdmin ? '/attendance' : '/teacher';
   const className = params.get('className');
   const section = params.get('section') || '';
 
@@ -58,12 +62,24 @@ export default function TeacherAttendance() {
     }
   }
 
+  async function deleteDay() {
+    if (!confirm(`Delete the attendance record for ${className}${section} on ${date}? This cannot be undone.`)) return;
+    try {
+      await AttendanceApi.removeDay(className, section, date);
+      setMarked(false);
+      setRows((rs) => rs.map((r) => ({ ...r, status: 'present' })));
+      setMessage('Attendance record deleted.');
+    } catch (e) {
+      setMessage(`Error: ${e.message}`);
+    }
+  }
+
   const counts = rows.reduce((acc, r) => ({ ...acc, [r.status]: (acc[r.status] || 0) + 1 }), {});
 
   return (
     <div className="page">
       <div className="page-header">
-        <button className="btn-secondary" onClick={() => navigate('/teacher')}>← Back</button>
+        <button className="btn-secondary" onClick={() => navigate(backTo)}>← Back</button>
         <h2>Attendance — {className}{section}</h2>
         <div className="spacer" />
         <input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
@@ -106,6 +122,9 @@ export default function TeacherAttendance() {
         <button className="btn-primary" disabled={saving || rows.length === 0} onClick={save}>
           {saving ? 'Saving...' : 'Save attendance'}
         </button>
+        {isAdmin && marked && (
+          <button className="btn-secondary" onClick={deleteDay}>Delete this day's record</button>
+        )}
       </div>
     </div>
   );

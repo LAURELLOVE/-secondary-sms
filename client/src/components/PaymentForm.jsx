@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { formatFCFA } from '../currency';
 
-export default function PaymentForm({ balance, onSave, onCancel }) {
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState('Cash');
+export default function PaymentForm({ existing, balance, onSave, onCancel }) {
+  const [amount, setAmount] = useState(existing?.amount ?? '');
+  const [method, setMethod] = useState(existing?.method || 'Cash');
   const [error, setError] = useState('');
 
   function submit(e) {
@@ -17,8 +17,8 @@ export default function PaymentForm({ balance, onSave, onCancel }) {
   return (
     <div className="modal-backdrop">
       <form className="modal" onSubmit={submit}>
-        <h3>Record payment</h3>
-        <p>Outstanding balance: {formatFCFA(balance)}</p>
+        <h3>{existing ? 'Edit payment' : 'Record payment'}</h3>
+        <p>{existing ? 'Most this payment can be' : 'Outstanding balance'}: {formatFCFA(balance)}</p>
         <label>
           Payment amount (FCFA)
           <input type="number" min="1" step="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
@@ -35,7 +35,7 @@ export default function PaymentForm({ balance, onSave, onCancel }) {
         </label>
         <div className="modal-actions">
           <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
-          <button type="submit" className="btn-primary">Record payment</button>
+          <button type="submit" className="btn-primary">{existing ? 'Save changes' : 'Record payment'}</button>
         </div>
       </form>
     </div>

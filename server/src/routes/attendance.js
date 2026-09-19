@@ -71,6 +71,16 @@ router.put('/class', requireAuth('admin', 'teacher'), async (req, res) => {
   res.json(saved);
 });
 
+router.delete('/class', requireAuth('admin'), async (req, res) => {
+  const { className, section = '', date } = req.query;
+  if (!className || !DATE_RE.test(date || '')) {
+    return res.status(400).json({ error: 'className and date (YYYY-MM-DD) are required' });
+  }
+  const removed = await AttendanceStore.remove(className, section, date);
+  if (!removed) return res.status(404).json({ error: 'No attendance recorded for that class and date' });
+  res.status(204).end();
+});
+
 function tally(sheets, studentId) {
   const counts = { present: 0, late: 0, absent: 0 };
   sheets.forEach((sheet) => {

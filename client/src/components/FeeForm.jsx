@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { ACADEMIC_YEARS, TERMS } from '../api';
 
-export default function FeeForm({ onSave, onCancel }) {
-  const [academicYear, setAcademicYear] = useState(ACADEMIC_YEARS[0]);
-  const [term, setTerm] = useState(TERMS[0]);
-  const [amountDue, setAmountDue] = useState('');
+export default function FeeForm({ existing, onSave, onCancel }) {
+  const [academicYear, setAcademicYear] = useState(existing?.academicYear || ACADEMIC_YEARS[0]);
+  const [term, setTerm] = useState(existing?.term || TERMS[0]);
+  const [amountDue, setAmountDue] = useState(existing?.amountDue ?? '');
   const [dueDate, setDueDate] = useState(() => {
+    if (existing?.dueDate) return existing.dueDate;
     const d = new Date();
     d.setDate(d.getDate() + 30);
     return d.toISOString().slice(0, 10);
@@ -21,7 +22,7 @@ export default function FeeForm({ onSave, onCancel }) {
   return (
     <div className="modal-backdrop">
       <form className="modal" onSubmit={submit}>
-        <h3>Add fee record</h3>
+        <h3>{existing ? 'Edit fee record' : 'Add fee record'}</h3>
         <label>
           Academic year
           <select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)}>
@@ -44,7 +45,7 @@ export default function FeeForm({ onSave, onCancel }) {
         </label>
         <div className="modal-actions">
           <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
-          <button type="submit" className="btn-primary">Add</button>
+          <button type="submit" className="btn-primary">{existing ? 'Save' : 'Add'}</button>
         </div>
       </form>
     </div>

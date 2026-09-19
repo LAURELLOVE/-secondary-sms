@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { ACADEMIC_YEARS } from '../api';
 import { CLASS_LEVELS, BRANCHES, classRequiresBranch, subjectsFor } from '../curriculum';
 
-export default function AssignmentForm({ onSave, onCancel }) {
-  const [className, setClassName] = useState(CLASS_LEVELS[0]);
-  const [section, setSection] = useState('');
-  const [branch, setBranch] = useState('');
-  const [subject, setSubject] = useState('');
-  const [academicYear, setAcademicYear] = useState(ACADEMIC_YEARS[0]);
+export default function AssignmentForm({ existing, onSave, onCancel }) {
+  const [className, setClassName] = useState(existing?.className || CLASS_LEVELS[0]);
+  const [section, setSection] = useState(existing?.section || '');
+  const [branch, setBranch] = useState(existing?.branch || '');
+  const [subject, setSubject] = useState(existing?.subject || '');
+  const [academicYear, setAcademicYear] = useState(existing?.academicYear || ACADEMIC_YEARS[0]);
 
   const needsBranch = classRequiresBranch(className);
   const subjectOptions = subjectsFor(className, branch);
@@ -21,7 +21,7 @@ export default function AssignmentForm({ onSave, onCancel }) {
   return (
     <div className="modal-backdrop">
       <form className="modal" onSubmit={submit}>
-        <h3>Assign class &amp; subject</h3>
+        <h3>{existing ? 'Edit assignment' : 'Assign class & subject'}</h3>
         <div className="form-row">
           <label>
             Class
@@ -61,7 +61,7 @@ export default function AssignmentForm({ onSave, onCancel }) {
         </label>
         <div className="modal-actions">
           <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
-          <button type="submit" className="btn-primary">Assign</button>
+          <button type="submit" className="btn-primary">{existing ? 'Save' : 'Assign'}</button>
         </div>
       </form>
     </div>

@@ -14,6 +14,11 @@ export default function Admins() {
   const [form, setForm] = useState({ username: '', fullName: '', password: '' });
   const [addMessage, setAddMessage] = useState(null);
 
+  const [editing, setEditing] = useState(null);
+  const [resetting, setResetting] = useState(null);
+  const [dialogError, setDialogError] = useState('');
+  const [notice, setNotice] = useState('');
+
   function refresh() {
     AdminsApi.list().then(setAdmins).catch((e) => setListError(e.message));
   }
@@ -53,6 +58,30 @@ export default function Admins() {
       refresh();
     } catch (err) {
       setListError(err.message);
+    }
+  }
+
+  async function saveEdit(e) {
+    e.preventDefault();
+    setDialogError('');
+    try {
+      await AdminsApi.update(editing.id, { fullName: editing.fullName, username: editing.username });
+      setEditing(null);
+      refresh();
+    } catch (err) {
+      setDialogError(err.message);
+    }
+  }
+
+  async function saveReset(e) {
+    e.preventDefault();
+    setDialogError('');
+    try {
+      await AdminsApi.resetPassword(resetting.id, resetting.newPassword);
+      setNotice(`Password reset for ${resetting.fullName}.`);
+      setResetting(null);
+    } catch (err) {
+      setDialogError(err.message);
     }
   }
 
@@ -98,6 +127,7 @@ export default function Admins() {
 
       <h3 style={{ marginTop: 24 }}>All administrators</h3>
       {listError && <p className="error-text">{listError}</p>}
+      {notice && <p className="ok-text">{notice}</p>}
       <ul className="list card">
         {admins.map((a) => (
           <li key={a.id} className="list-row">
@@ -105,12 +135,55 @@ export default function Admins() {
               <strong>{a.fullName}</strong>
               <div className="muted">@{a.username}{a.id === user?.id ? ' • you' : ''}</div>
             </div>
-            {a.id !== user?.id && (
-              <button className="icon-btn" title="Remove" onClick={() => remove(a)}>🗑️</button>
-            )}
+            <div className="list-row-actions">
+              <button className="icon-btn" title="Edit" onClick={() => { setDialogError(''); setEditing({ ...a }); }}>✏️</button>
+              {a.id !== user?.id && (
+                <button className="icon-btn" title="Reset password" onClick={() => { setDialogError(''); setResetting({ ...a, newPassword: '' }); }}>🔑</button>
+              )}
+              {a.id !== user?.id && (
+                <button className="icon-btn" title="Remove" onClick={() => remove(a)}>🗑️</button>
+              )}
+            </div>
           </li>
         ))}
       </ul>
+      {editing && (
+        <div className="modal-backdrop">
+          <form className="modal" onSubmit={saveEdit}>
+            <h3>Edit administrator</h3>
+            {dialogError && <p className="error-text">{dialogError}</p>}
+            <label>
+              Full name
+              <input value={editing.fullName} onChange={(e) => setEditing({ ...editing, fullName: e.target.value })} required />
+            </label>
+            <label>
+              Username
+              <input value={editing.username} onChange={(e) => setEditing({ ...editing, username: e.target.value })} required />
+            </label>
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setEditing(null)}>Cancel</button>
+              <button type="submit" className="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      )}
+      {resetting && (
+        <div className="modal-backdrop">
+          <form className="modal" onSubmit={saveReset}>
+            <h3>Reset password for {resetting.fullName}</h3>
+            <p className="hint">Passwords are stored securely and can't be viewed, so set a new one and share it with them.</p>
+            {dialogError && <p className="error-text">{dialogError}</p>}
+            <label>
+              New password (min. 8 characters)
+              <input type="password" value={resetting.newPassword} onChange={(e) => setResetting({ ...resetting, newPassword: e.target.value })} minLength={8} required />
+            </label>
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setResetting(null)}>Cancel</button>
+              <button type="submit" className="btn-primary">Reset password</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,6 +40,14 @@ export default function Attendance() {
         />
         <label className="inline-label">From <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
         <label className="inline-label">To <input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+        {className !== 'All' && (
+          <button
+            className="btn-primary"
+            onClick={() => navigate(`/attendance/mark?className=${encodeURIComponent(className)}&section=${encodeURIComponent(section.trim())}`)}
+          >
+            Mark / edit a day
+          </button>
+        )}
       </div>
       {error && <p className="error-text">{error}</p>}
       <p className="muted">{data.daysMarked} class-day(s) with attendance recorded in this selection</p>

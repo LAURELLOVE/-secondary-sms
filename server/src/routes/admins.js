@@ -41,6 +41,38 @@ router.post('/me/password', requireAuth('admin'), async (req, res) => {
   res.json({ ok: true });
 });
 
+router.put('/:id', requireAuth('admin'), async (req, res) => {
+  const { username, fullName } = req.body;
+  const changes = {};
+  if (username !== undefined) {
+    if (!USERNAME_RE.test(username)) {
+      return res.status(400).json({ error: 'Username must be 3-30 letters, numbers, dots, dashes or underscores' });
+    }
+    const taken = await AdminStore.findByUsername(username);
+    if (taken && taken.id !== req.params.id) return res.status(409).json({ error: 'That username is already taken' });
+    changes.username = username;
+  }
+  if (fullName !== undefined) {
+    if (!String(fullName).trim()) return res.status(400).json({ error: 'Full name is required' });
+    changes.fullName = String(fullName).trim();
+  }
+  const admin = await AdminStore.update(req.params.id, changes);
+  if (!admin) return res.status(404).json({ error: 'Administrator not found' });
+  res.json(AdminStore.sanitize(admin));
+});
+
+// Passwords are stored hashed and can't be read back, so an admin who is
+// locked out gets a new one set by another administrator instead.
+router.post('/:id/password', requireAuth('admin'), async (req, res) => {
+  const { newPassword = '' } = req.body;
+  if (newPassword.length < MIN_PASSWORD) {
+    return res.status(400).json({ error: `New password must be at least ${MIN_PASSWORD} characters` });
+  }
+  if (!(await AdminStore.find(req.params.id))) return res.status(404).json({ error: 'Administrator not found' });
+  await AdminStore.updatePassword(req.params.id, newPassword);
+  res.json({ ok: true });
+});
+
 router.delete('/:id', requireAuth('admin'), async (req, res) => {
   if (req.params.id === req.user.sub) {
     return res.status(400).json({ error: 'You cannot delete your own account' });

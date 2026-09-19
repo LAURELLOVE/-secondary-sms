@@ -174,6 +174,9 @@ function GradesTab({ student }) {
 
 function FeesTab({ student }) {
   const [receipt, setReceipt] = useState(null);
+  const [editingFee, setEditingFee] = useState(null);
+  const [editingPayment, setEditingPayment] = useState(null);
+  const [actionError, setActionError] = useState('');
   const [records, setRecords] = useState([]);
   const [showFeeForm, setShowFeeForm] = useState(false);
   const [payingFee, setPayingFee] = useState(null);
@@ -191,6 +194,35 @@ function FeesTab({ student }) {
     refresh();
   }
 
+  async function run(action) {
+    setActionError('');
+    try {
+      await action();
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    }
+  }
+
+  const saveFeeEdit = (data) =>
+    run(async () => { await FeesApi.update(editingFee.id, data); setEditingFee(null); });
+
+  const savePaymentEdit = (data) =>
+    run(async () => {
+      await FeesApi.updatePayment(editingPayment.fee.id, editingPayment.payment.id, data);
+      setEditingPayment(null);
+    });
+
+  const deleteFee = (fee) => {
+    if (!confirm(`Delete the ${fee.academicYear} ${fee.term} fee record and all its payments? This cannot be undone.`)) return;
+    run(() => FeesApi.remove(fee.id));
+  };
+
+  const deletePayment = (fee, payment) => {
+    if (!confirm(`Delete payment ${payment.receiptNumber}? The balance will increase again.`)) return;
+    run(() => FeesApi.removePayment(fee.id, payment.id));
+  };
+
   async function pay(data) {
     await FeesApi.addPayment(payingFee.id, data);
     setPayingFee(null);
@@ -203,6 +235,7 @@ function FeesTab({ student }) {
         <div className="spacer" />
         <button className="btn-primary" onClick={() => setShowFeeForm(true)}>+ Add fee record</button>
       </div>
+      {actionError && <p className="error-text">{actionError}</p>}
       {records.length === 0 ? (
         <p className="empty">No fee records for this student yet</p>
       ) : (
@@ -221,18 +254,26 @@ function FeesTab({ student }) {
                     <span>
                       {formatFCFA(p.amount)} • {p.method} — {p.receiptNumber} • {new Date(p.date).toLocaleDateString()}
                     </span>
-                    <button className="btn-secondary" onClick={() => setReceipt({ fee: r, payment: p })}>
-                      🖨 Receipt
-                    </button>
+                    <span className="list-row-actions">
+                      <button className="btn-secondary" onClick={() => setReceipt({ fee: r, payment: p })}>
+                        🖨 Receipt
+                      </button>
+                      <button className="icon-btn" title="Edit payment" onClick={() => setEditingPayment({ fee: r, payment: p })}>✏️</button>
+                      <button className="icon-btn" title="Delete payment" onClick={() => deletePayment(r, p)}>🗑️</button>
+                    </span>
                   </div>
                 ))}
-                <button
-                  className="btn-secondary"
-                  disabled={r.isFullyPaid}
-                  onClick={() => setPayingFee(r)}
-                >
-                  Record payment
-                </button>
+                <div className="toolbar" style={{ marginTop: 8 }}>
+                  <button
+                    className="btn-secondary"
+                    disabled={r.isFullyPaid}
+                    onClick={() => setPayingFee(r)}
+                  >
+                    Record payment
+                  </button>
+                  <button className="btn-secondary" onClick={() => setEditingFee(r)}>Edit fee record</button>
+                  <button className="btn-secondary" onClick={() => deleteFee(r)}>Delete fee record</button>
+                </div>
               </div>
             )}
           </div>
@@ -241,6 +282,15 @@ function FeesTab({ student }) {
       {showFeeForm && <FeeForm onSave={addFee} onCancel={() => setShowFeeForm(false)} />}
       {payingFee && (
         <PaymentForm balance={payingFee.balance} onSave={pay} onCancel={() => setPayingFee(null)} />
+      )}
+      {editingFee && <FeeForm existing={editingFee} onSave={saveFeeEdit} onCancel={() => setEditingFee(null)} />}
+      {editingPayment && (
+        <PaymentForm
+          existing={editingPayment.payment}
+          balance={editingPayment.fee.balance + editingPayment.payment.amount}
+          onSave={savePaymentEdit}
+          onCancel={() => setEditingPayment(null)}
+        />
       )}
       {receipt && (
         <Receipt student={student} fee={receipt.fee} payment={receipt.payment} onClose={() => setReceipt(null)} />

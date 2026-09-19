@@ -103,6 +103,14 @@ export default function App() {
         }
       />
       <Route
+        path="/attendance/mark"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminShell><TeacherAttendance /></AdminShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/attendance"
         element={
           <ProtectedRoute role="admin">

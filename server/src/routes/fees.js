@@ -45,6 +45,57 @@ router.post('/', requireAuth('admin'), async (req, res) => {
   res.status(201).json(serialize(fee));
 });
 
+router.put('/:id', requireAuth('admin'), async (req, res) => {
+  const fee = await FeeStore.find(req.params.id);
+  if (!fee) return res.status(404).json({ error: 'Fee record not found' });
+
+  const { academicYear, term, amountDue, dueDate } = req.body;
+  const changes = {};
+  if (academicYear !== undefined) changes.academicYear = academicYear;
+  if (term !== undefined) changes.term = term;
+  if (dueDate !== undefined) changes.dueDate = dueDate;
+  if (amountDue !== undefined) {
+    const { amountPaid } = feeTotals(fee);
+    if (typeof amountDue !== 'number' || amountDue <= 0) {
+      return res.status(400).json({ error: 'Amount due must be a positive number' });
+    }
+    if (amountDue < amountPaid) {
+      return res.status(400).json({ error: `Amount due cannot be less than the ${amountPaid} already paid` });
+    }
+    changes.amountDue = amountDue;
+  }
+  res.json(serialize(await FeeStore.update(req.params.id, changes)));
+});
+
+router.put('/:id/payments/:paymentId', requireAuth('admin'), async (req, res) => {
+  const fee = await FeeStore.find(req.params.id);
+  const payment = fee?.payments.find((p) => p.id === req.params.paymentId);
+  if (!payment) return res.status(404).json({ error: 'Payment not found' });
+
+  const { amount, method } = req.body;
+  const changes = {};
+  if (method !== undefined) changes.method = method;
+  if (amount !== undefined) {
+    const othersPaid = feeTotals(fee).amountPaid - payment.amount;
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+    if (othersPaid + amount > fee.amountDue) {
+      return res.status(400).json({ error: `Amount can be at most ${fee.amountDue - othersPaid}` });
+    }
+    changes.amount = amount;
+  }
+  res.json(serialize(await FeeStore.updatePayment(req.params.id, req.params.paymentId, changes)));
+});
+
+router.delete('/:id/payments/:paymentId', requireAuth('admin'), async (req, res) => {
+  const fee = await FeeStore.find(req.params.id);
+  if (!fee || !fee.payments.some((p) => p.id === req.params.paymentId)) {
+    return res.status(404).json({ error: 'Payment not found' });
+  }
+  res.json(serialize(await FeeStore.removePayment(req.params.id, req.params.paymentId)));
+});
+
 router.delete('/:id', requireAuth('admin'), async (req, res) => {
   const removed = await FeeStore.remove(req.params.id);
   if (!removed) return res.status(404).json({ error: 'Fee record not found' });

@@ -18,6 +18,7 @@ export default function Teachers() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showAssignForm, setShowAssignForm] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState(null);
   const [revealedCode, setRevealedCode] = useState(null);
 
   function refreshList() {
@@ -72,9 +73,14 @@ export default function Teachers() {
     refreshList();
   }
 
-  async function addAssignment(data) {
-    await TeachersApi.addAssignment(selectedId, data);
+  async function saveAssignment(data) {
+    if (editingAssignment) {
+      await TeachersApi.updateAssignment(editingAssignment.id, data);
+    } else {
+      await TeachersApi.addAssignment(selectedId, data);
+    }
     setShowAssignForm(false);
+    setEditingAssignment(null);
     TeachersApi.get(selectedId).then(setDetail);
   }
 
@@ -154,7 +160,7 @@ export default function Teachers() {
             <div className="toolbar" style={{ marginTop: 20 }}>
               <h3 style={{ margin: 0 }}>Class &amp; subject assignments</h3>
               <div className="spacer" />
-              <button className="btn-primary" onClick={() => setShowAssignForm(true)}>+ Assign</button>
+              <button className="btn-primary" onClick={() => { setEditingAssignment(null); setShowAssignForm(true); }}>+ Assign</button>
             </div>
             {detail.assignments?.length ? (
               <ul className="list">
@@ -163,7 +169,10 @@ export default function Teachers() {
                     <span>
                       {a.subject} — {a.className}{a.section}{a.branch ? ` (${a.branch})` : ''} • {a.academicYear}
                     </span>
-                    <button className="icon-btn" onClick={() => removeAssignment(a.id)}>🗑️</button>
+                    <span className="list-row-actions">
+                      <button className="icon-btn" title="Edit assignment" onClick={() => { setEditingAssignment(a); setShowAssignForm(true); }}>✏️</button>
+                      <button className="icon-btn" title="Remove assignment" onClick={() => removeAssignment(a.id)}>🗑️</button>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -180,7 +189,11 @@ export default function Teachers() {
         <TeacherForm existing={editing} onSave={save} onCancel={() => { setShowForm(false); setEditing(null); }} />
       )}
       {showAssignForm && (
-        <AssignmentForm onSave={addAssignment} onCancel={() => setShowAssignForm(false)} />
+        <AssignmentForm
+          existing={editingAssignment}
+          onSave={saveAssignment}
+          onCancel={() => { setShowAssignForm(false); setEditingAssignment(null); }}
+        />
       )}
       {revealedCode && (
         <AccessCodeModal

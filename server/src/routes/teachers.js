@@ -94,6 +94,16 @@ router.post('/:id/assignments', requireAuth('admin'), async (req, res) => {
   res.status(201).json(assignment);
 });
 
+router.put('/assignments/:assignmentId', requireAuth('admin'), async (req, res) => {
+  const { className, section, branch, subject, academicYear } = req.body;
+  const changes = Object.fromEntries(
+    Object.entries({ className, section, branch, subject, academicYear }).filter(([, v]) => v !== undefined)
+  );
+  const assignment = await AssignmentStore.update(req.params.assignmentId, changes);
+  if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
+  res.json(assignment);
+});
+
 router.delete('/assignments/:assignmentId', requireAuth('admin'), async (req, res) => {
   const removed = await AssignmentStore.remove(req.params.assignmentId);
   if (!removed) return res.status(404).json({ error: 'Assignment not found' });
