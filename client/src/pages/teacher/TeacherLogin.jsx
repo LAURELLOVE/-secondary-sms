@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthApi } from '../../api';
 import { useAuth } from '../../auth/AuthContext';
@@ -13,8 +13,13 @@ export default function TeacherLogin() {
   const [info, setInfo] = useState('');
   const [devOtp, setDevOtp] = useState(null);
   const [error, setError] = useState('');
+  const [otpLogin, setOtpLogin] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    AuthApi.config().then((c) => setOtpLogin(c.otpLogin)).catch(() => setOtpLogin(false));
+  }, []);
 
   async function requestOtp(e) {
     e.preventDefault();
@@ -26,6 +31,12 @@ export default function TeacherLogin() {
     }
     try {
       const res = await AuthApi.teacherLogin(normalized, accessCode);
+      // No SMS step configured: the server signs the teacher straight in.
+      if (res.token) {
+        login(res.token, res.role, res.user);
+        navigate('/teacher');
+        return;
+      }
       setOtpRequestId(res.otpRequestId);
       setInfo(res.message);
       setDevOtp(res.devOtp || null);
@@ -78,7 +89,9 @@ export default function TeacherLogin() {
               />
             </label>
             <p className="hint">Given to you by your school administrator.</p>
-            <button type="submit" className="btn-primary full-width">Send verification code</button>
+            <button type="submit" className="btn-primary full-width">
+              {otpLogin ? 'Send verification code' : 'Sign in'}
+            </button>
           </>
         ) : (
           <>

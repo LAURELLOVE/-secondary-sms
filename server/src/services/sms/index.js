@@ -22,13 +22,9 @@ const twilioConfigured = !forceMock && Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH
 export const isSmsLive = nexahConfigured || twilioConfigured;
 export const activeSmsProvider = nexahConfigured ? 'nexah' : twilioConfigured ? 'twilio' : 'mock';
 
-// Lengths only (never the values) - a Twilio SID is 34 chars, auth token 32.
-export const smsDebug = {
-  twilioSidLength: TWILIO_ACCOUNT_SID.length,
-  twilioTokenLength: TWILIO_AUTH_TOKEN.length,
-  twilioFromLength: TWILIO_FROM_NUMBER.length,
-  twilioSidPrefix: TWILIO_ACCOUNT_SID.slice(0, 2),
-};
+// Teachers sign in with phone + access code only, unless OTP_LOGIN=on adds the
+// second step (an SMS code). Turn it on once a paid SMS provider is connected.
+export const otpLoginEnabled = clean(process.env.OTP_LOGIN).toLowerCase() === 'on';
 
 export async function sendSms(mobile, message) {
   if (nexahConfigured) {

@@ -11,7 +11,7 @@ import feesRouter from './routes/fees.js';
 import teachersRouter from './routes/teachers.js';
 import attendanceRouter from './routes/attendance.js';
 import adminsRouter from './routes/admins.js';
-import { isSmsLive, activeSmsProvider, smsDebug } from './services/sms/index.js';
+import { isSmsLive, activeSmsProvider } from './services/sms/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/health', (req, res) =>
-  res.json({ status: 'ok', smsLive: isSmsLive, smsProvider: activeSmsProvider, smsDebug })
+  res.json({ status: 'ok', smsLive: isSmsLive, smsProvider: activeSmsProvider })
 );
 
 app.use('/api/auth', authRouter);

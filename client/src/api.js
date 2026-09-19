@@ -76,6 +76,7 @@ export const AdminsApi = {
 };
 
 export const AuthApi = {
+  config: () => request('/auth/config'),
   adminLogin: (username, password) =>
     request('/auth/admin/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   teacherLogin: (phone, accessCode) =>
