@@ -8,8 +8,10 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "android:sync": "vite build && cap sync android",
-    "android:open": "vite build && cap sync android && cap open android"
+    "android:sync": "node scripts/build-android.mjs",
+    "android:open": "node scripts/build-android.mjs && cap open android",
+    "dev:admin": "node scripts/dev-app.mjs admin",
+    "dev:teacher": "node scripts/dev-app.mjs teacher"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

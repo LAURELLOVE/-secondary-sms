@@ -1,12 +1,15 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import InstallPrompt from '../components/InstallPrompt';
+import { APP_MODE } from '../appMode';
 
 export default function Welcome() {
   const { token, role } = useAuth();
 
   if (token && role === 'admin') return <Navigate to="/dashboard" replace />;
   if (token && role === 'teacher') return <Navigate to="/teacher" replace />;
+  if (APP_MODE === 'admin') return <Navigate to="/login" replace />;
+  if (APP_MODE === 'teacher') return <Navigate to="/teacher/login" replace />;
 
   return (
     <div className="landing-page">

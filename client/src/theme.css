@@ -1,0 +1,18 @@
+/* Teacher theme: fresh emerald with the same gold accent. Applied via <html data-theme="teacher">. */
+html[data-theme='teacher'] {
+  --color-primary: #047857;
+  --color-primary-dark: #064e3b;
+  --color-primary-light: #d1fae5;
+  --color-primary-soft: #a7f3d0;
+  --color-accent: #fbbf24;
+  --color-accent-text: #b45309;
+  --color-bg: #f2f9f6;
+  --color-hover: #ecf7f2;
+  --color-border: #d3e6dd;
+  --color-border-soft: #e4f1ea;
+  --color-text: #0f2a20;
+  --color-text-muted: #587a6b;
+  --gradient: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+  --shadow-rgb: 6, 40, 30;
+  --overlay-rgb: 4, 120, 87;
+}

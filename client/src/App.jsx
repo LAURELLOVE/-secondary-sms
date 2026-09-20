@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Welcome from './pages/Welcome';
 import Dashboard from './pages/Dashboard';
@@ -17,6 +17,7 @@ import PhoneSms from './pages/PhoneSms';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { useAuth } from './auth/AuthContext';
 import Icon from './components/Icon';
+import { APP_MODE } from './appMode';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Home', icon: 'home', end: true },
@@ -203,7 +204,20 @@ function TeacherShell({ children }) {
   );
 }
 
+// Admin = indigo, Teacher = emerald. The Android apps are fixed to their own colours;
+// the website switches according to who is signed in / which sign-in page is open.
+function useTheme() {
+  const { role } = useAuth();
+  const { pathname } = useLocation();
+  const theme =
+    APP_MODE !== 'web' ? APP_MODE : role === 'teacher' || pathname.startsWith('/teacher') ? 'teacher' : 'admin';
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+}
+
 export default function App() {
+  useTheme();
   return (
     <Routes>
       <Route path="/" element={<Welcome />} />

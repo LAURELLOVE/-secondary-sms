@@ -59,10 +59,10 @@
   .app-header {
     height: calc(var(--appbar-h) + var(--sat));
     padding: var(--sat) 4px 0 16px;
-    background: var(--color-primary-dark);
+    background: var(--gradient);
     color: #fff;
     border-bottom: none;
-    box-shadow: 0 2px 6px rgba(45, 32, 19, 0.28);
+    box-shadow: 0 2px 6px rgba(var(--shadow-rgb), 0.28);
     position: relative;
     z-index: 5;
     gap: 4px;
@@ -85,7 +85,7 @@
     flex-shrink: 0;
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
-    box-shadow: 0 -2px 10px rgba(45, 32, 19, 0.07);
+    box-shadow: 0 -2px 10px rgba(var(--shadow-rgb), 0.07);
     padding-bottom: var(--sab);
   }
   .bottom-nav-item {
@@ -123,7 +123,7 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(45, 32, 19, 0.5);
+    background: rgba(var(--shadow-rgb), 0.5);
     z-index: 60;
     animation: fade-in 0.18s ease-out;
   }
@@ -178,8 +178,9 @@
     font-size: 15px;
     font-weight: 500;
   }
-  .btn-primary:active { background: var(--color-primary-dark); transform: scale(0.97); }
-  .btn-secondary:active { background: #e6d5bd; transform: scale(0.97); }
+  .btn-primary { box-shadow: 0 2px 6px rgba(var(--shadow-rgb), 0.22); }
+  .btn-primary:active { filter: brightness(0.92); transform: scale(0.97); }
+  .btn-secondary:active { background: var(--color-primary-soft); transform: scale(0.97); }
   .icon-btn { min-width: 44px; min-height: 44px; font-size: 18px; border-radius: 50%; }
   .icon-btn:active { background: var(--color-primary-light); }
   input, select, textarea { font-size: 16px; }
@@ -208,7 +209,7 @@
     border-radius: 18px;
     display: grid;
     place-items: center;
-    box-shadow: 0 6px 18px rgba(45, 32, 19, 0.38);
+    box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.38);
     z-index: 10;
   }
   .fab .icon { width: 26px; height: 26px; }
@@ -261,7 +262,7 @@
     border-radius: 16px;
     margin-bottom: 10px;
     padding: 6px 0 8px;
-    box-shadow: 0 1px 3px rgba(45, 32, 19, 0.07);
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.07);
   }
   .data-table.stack tbody tr:active { background: var(--color-primary-light); }
   .data-table.stack td {

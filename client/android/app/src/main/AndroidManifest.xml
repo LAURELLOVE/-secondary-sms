@@ -24,16 +24,6 @@
 
         </activity>
 
-        <!-- Sends the school's SMS codes through this phone's SIM while it is switched on in the app -->
-        <service
-            android:name=".SmsGatewayService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="sms_gateway" />
-        </service>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -48,12 +38,4 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <!-- Still installable on tablets / phones without a SIM; they just can't act as the SMS sender -->
-    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 </manifest>

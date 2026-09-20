@@ -2,7 +2,7 @@
   "appId": "com.school.sms",
   "appName": "School SMS",
   "webDir": "dist",
-  "backgroundColor": "#faf6f0",
+  "backgroundColor": "#f4f5fb",
   "android": {
     "allowMixedContent": false
   },

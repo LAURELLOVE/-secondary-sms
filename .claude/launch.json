@@ -37,6 +37,28 @@
         "--host"
       ],
       "port": 4173
+    },
+    {
+      "name": "client-admin",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:admin",
+        "--prefix",
+        "client"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "client-teacher",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:teacher",
+        "--prefix",
+        "client"
+      ],
+      "port": 5175
     }
   ]
 }

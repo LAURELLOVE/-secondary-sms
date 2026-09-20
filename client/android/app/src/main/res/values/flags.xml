@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Administrator app: may register the SMS sender. The teacher build overrides this to false. -->
+    <bool name="sms_gateway_enabled">true</bool>
+</resources>

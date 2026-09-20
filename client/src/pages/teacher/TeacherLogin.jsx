@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { AuthApi } from '../../api';
 import { useAuth } from '../../auth/AuthContext';
 import { normalizeCameroonPhone } from '../../phone';
+import { APP_MODE } from '../../appMode';
 
 export default function TeacherLogin() {
   const [step, setStep] = useState('credentials'); // credentials | otp
@@ -20,6 +21,8 @@ export default function TeacherLogin() {
   useEffect(() => {
     AuthApi.config().then((c) => setOtpLogin(c.otpLogin)).catch(() => setOtpLogin(false));
   }, []);
+
+  if (APP_MODE === 'admin') return <Navigate to="/login" replace />;
 
   async function requestOtp(e) {
     e.preventDefault();
@@ -110,9 +113,11 @@ export default function TeacherLogin() {
           </>
         )}
 
-        <p className="auth-switch">
-          Are you an administrator? <Link to="/login">Sign in here</Link>
-        </p>
+        {APP_MODE === 'web' && (
+          <p className="auth-switch">
+            Are you an administrator? <Link to="/login">Sign in here</Link>
+          </p>
+        )}
       </form>
     </div>
   );

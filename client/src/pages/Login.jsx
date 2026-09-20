@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { AuthApi } from '../api';
 import { useAuth } from '../auth/AuthContext';
+import { APP_MODE } from '../appMode';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -9,6 +10,8 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  if (APP_MODE === 'teacher') return <Navigate to="/teacher/login" replace />;
 
   async function submit(e) {
     e.preventDefault();
@@ -37,9 +40,11 @@ export default function Login() {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
         <button type="submit" className="btn-primary full-width">Sign in</button>
-        <p className="auth-switch">
-          Are you a teacher? <Link to="/teacher/login">Sign in with your phone</Link>
-        </p>
+        {APP_MODE === 'web' && (
+          <p className="auth-switch">
+            Are you a teacher? <Link to="/teacher/login">Sign in with your phone</Link>
+          </p>
+        )}
         <p className="hint">Demo admin: admin / admin123</p>
       </form>
     </div>

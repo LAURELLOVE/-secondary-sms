@@ -3,10 +3,13 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import './index.css'
+import './theme.css'
 import './mobile.css'
 import App from './App.jsx'
 import { initNative } from './native'
+import { APP_MODE } from './appMode'
 
+document.documentElement.dataset.theme = APP_MODE === 'teacher' ? 'teacher' : 'admin'
 initNative()
 
 createRoot(document.getElementById('root')).render(
