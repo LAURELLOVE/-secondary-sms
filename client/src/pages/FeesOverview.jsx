@@ -33,7 +33,7 @@ export default function FeesOverview() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Fees overview</h2>
+        <h2 className="desktop-only">Fees overview</h2>
         <div className="spacer" />
         <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); setBranchFilter('All'); }}>
           <option value="All">All classes</option>
@@ -45,11 +45,11 @@ export default function FeesOverview() {
             {BRANCHES.map((b) => <option key={b}>{b}</option>)}
           </select>
         )}
-        <button className="btn-secondary" onClick={() => FeesApi.exportCsv().catch((e) => alert(e.message))}>
+        <button className="btn-secondary web-only" onClick={() => FeesApi.exportCsv().catch((e) => alert(e.message))}>
           Export CSV
         </button>
       </div>
-      <table className="data-table">
+      <table className="data-table stack">
         <thead>
           <tr><th>Student</th><th>Class</th><th>Amount due</th><th>Amount paid</th><th>Balance</th><th>Status</th></tr>
         </thead>
@@ -59,11 +59,11 @@ export default function FeesOverview() {
             return (
               <tr key={student.id} onClick={() => navigate(`/students?open=${student.id}&tab=fees`)}>
                 <td>{student.fullName}</td>
-                <td>{student.className}{student.section}{student.branch ? ` (${student.branch})` : ''}</td>
-                <td>{formatFCFA(due)}</td>
-                <td>{formatFCFA(paid)}</td>
-                <td className={fullyPaid ? 'ok-text' : 'error-text'}>{formatFCFA(balance)}</td>
-                <td><span className={`chip ${fullyPaid ? 'chip-ok' : 'chip-warn'}`}>{fullyPaid ? 'Paid' : 'Owing'}</span></td>
+                <td data-label="Class">{student.className}{student.section}{student.branch ? ` (${student.branch})` : ''}</td>
+                <td data-label="Amount due">{formatFCFA(due)}</td>
+                <td data-label="Amount paid">{formatFCFA(paid)}</td>
+                <td data-label="Balance" className={fullyPaid ? 'ok-text' : 'error-text'}>{formatFCFA(balance)}</td>
+                <td data-label="Status"><span className={`chip ${fullyPaid ? 'chip-ok' : 'chip-warn'}`}>{fullyPaid ? 'Paid' : 'Owing'}</span></td>
               </tr>
             );
           })}

@@ -89,7 +89,7 @@ export default function Admins() {
 
   return (
     <div className="page">
-      <h2>Administrators</h2>
+      <h2 className="desktop-only">Administrators</h2>
 
       <div className="settings-grid">
         <form className="card settings-card" onSubmit={changePassword}>

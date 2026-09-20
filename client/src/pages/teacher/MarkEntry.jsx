@@ -12,6 +12,7 @@ export default function MarkEntry() {
 
   const [term, setTerm] = useState(TERMS[0]);
   const [rows, setRows] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -32,7 +33,10 @@ export default function MarkEntry() {
           };
         })
       );
-      if (!cancelled) setRows(withMarks);
+      if (!cancelled) {
+        setRows(withMarks);
+        setLoaded(true);
+      }
     }
 
     load();
@@ -74,7 +78,7 @@ export default function MarkEntry() {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="btn-secondary" onClick={() => navigate('/teacher')}>← Back</button>
+        <button className="btn-secondary desktop-only" onClick={() => navigate('/teacher')}>← Back</button>
         <h2>{subject} — {className}{section}</h2>
         <div className="spacer" />
         <select value={term} onChange={(e) => setTerm(e.target.value)}>
@@ -84,7 +88,7 @@ export default function MarkEntry() {
 
       {message && <p className={message.startsWith('Error') ? 'error-text' : 'ok-text'}>{message}</p>}
 
-      <table className="data-table">
+      <table className="data-table stack">
         <thead>
           <tr>
             <th>Student</th>
@@ -99,9 +103,10 @@ export default function MarkEntry() {
             return (
               <tr key={r.student.id}>
                 <td>{r.student.fullName}</td>
-                <td>
+                <td data-label={`CA score (0-${CA_MAX})`}>
                   <input
                     type="number"
+                    inputMode="numeric"
                     min="0"
                     max={CA_MAX}
                     value={r.caScore}
@@ -109,9 +114,10 @@ export default function MarkEntry() {
                     className="table-input"
                   />
                 </td>
-                <td>
+                <td data-label={`Exam score (0-${EXAM_MAX})`}>
                   <input
                     type="number"
+                    inputMode="numeric"
                     min="0"
                     max={EXAM_MAX}
                     value={r.examScore}
@@ -119,15 +125,16 @@ export default function MarkEntry() {
                     className="table-input"
                   />
                 </td>
-                <td>{total}</td>
+                <td data-label="Total">{total}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      {rows.length === 0 && <p className="empty">No students in this class yet</p>}
+      {!loaded && <p className="empty">Loading...</p>}
+      {loaded && rows.length === 0 && <p className="empty">No students in this class yet</p>}
 
-      <button className="btn-primary" style={{ marginTop: 16 }} disabled={saving} onClick={saveAll}>
+      <button className="btn-primary save-bar" disabled={saving} onClick={saveAll}>
         {saving ? 'Saving...' : 'Save all marks'}
       </button>
     </div>

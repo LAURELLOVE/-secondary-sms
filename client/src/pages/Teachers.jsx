@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
+import useDetailSelection from '../hooks/useDetailSelection';
+import Icon from '../components/Icon';
 import { TeachersApi, SERVER_ORIGIN } from '../api';
 import TeacherForm from '../components/TeacherForm';
 import AssignmentForm from '../components/AssignmentForm';
@@ -14,7 +16,7 @@ function Avatar({ teacher, size = '' }) {
 
 export default function Teachers() {
   const [teachers, setTeachers] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, selectTeacher, closeDetail] = useDetailSelection();
   const [detail, setDetail] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -51,7 +53,7 @@ export default function Teachers() {
     setEditing(null);
     refreshList();
     if (selectedId) TeachersApi.get(selectedId).then(setDetail);
-    if (!selectedId && teacherId) setSelectedId(teacherId);
+    if (!selectedId && teacherId) selectTeacher(teacherId);
   }
 
   async function openPortal(teacher) {
@@ -82,7 +84,7 @@ export default function Teachers() {
   async function remove(id) {
     if (!confirm('Remove this teacher? Their login and class assignments will be deleted.')) return;
     await TeachersApi.remove(id);
-    setSelectedId(null);
+    closeDetail();
     refreshList();
   }
 
@@ -103,22 +105,22 @@ export default function Teachers() {
   }
 
   return (
-    <div className="page split">
+    <div className={`page split ${selectedId ? 'has-detail' : ''}`}>
       <div className="master">
         <div className="master-toolbar">
           <span className="muted" style={{ padding: '0 4px' }}>Teachers</span>
           <div className="spacer" />
-          <button className="btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>+</button>
+          <button className="btn-primary fab" aria-label="Add teacher" onClick={() => { setEditing(null); setShowForm(true); }}><Icon name="add" /></button>
         </div>
         <ul className="list">
           {teachers.map((t) => (
             <li
               key={t.id}
               className={`list-row selectable ${t.id === selectedId ? 'selected' : ''}`}
-              onClick={() => setSelectedId(t.id)}
+              onClick={() => selectTeacher(t.id)}
             >
               <Avatar teacher={t} />
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <strong>{t.fullName}</strong>
                 <div className="muted">{t.subjectSpecialization} • {t.phone}</div>
               </div>
@@ -165,7 +167,7 @@ export default function Teachers() {
               ].map(([label, value]) => (
                 <div className="info-row" key={label}>
                   <span className="info-label">{label}</span>
-                  <span style={label === 'Access code' ? { fontFamily: 'monospace', letterSpacing: '0.08em', fontWeight: 700 } : undefined}>
+                  <span style={label === 'Access code' && detail.accessCode ? { fontFamily: 'monospace', letterSpacing: '0.08em', fontWeight: 700 } : undefined}>
                     {value || '—'}
                   </span>
                 </div>

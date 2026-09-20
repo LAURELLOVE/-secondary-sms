@@ -16,7 +16,7 @@ export default function Login() {
     try {
       const { token, user, role } = await AuthApi.adminLogin(username, password);
       login(token, role, user);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);
     }

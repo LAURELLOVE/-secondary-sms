@@ -1,4 +1,5 @@
-import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Welcome from './pages/Welcome';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
@@ -14,33 +15,85 @@ import Attendance from './pages/Attendance';
 import Admins from './pages/Admins';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { useAuth } from './auth/AuthContext';
+import Icon from './components/Icon';
 
 const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', icon: '📊', end: true },
-  { to: '/students', label: 'Students', icon: '👥' },
-  { to: '/grades', label: 'Grades', icon: '⭐' },
-  { to: '/fees', label: 'Fees', icon: '💳' },
-  { to: '/attendance', label: 'Attendance', icon: '📅' },
-  { to: '/teachers', label: 'Teachers', icon: '🧑‍🏫' },
-  { to: '/admins', label: 'Admins', icon: '🔐' },
+  { to: '/dashboard', label: 'Home', icon: 'home', end: true },
+  { to: '/students', label: 'Students', icon: 'people' },
+  { to: '/grades', label: 'Grades', icon: 'grade' },
+  { to: '/fees', label: 'Fees', icon: 'payments' },
+  { to: '/attendance', label: 'Attendance', icon: 'calendar' },
+  { to: '/teachers', label: 'Teachers', icon: 'school' },
+  { to: '/admins', label: 'Admins', icon: 'lock' },
 ];
+// On a phone the first four are bottom tabs; the rest live under "More".
+const TAB_ITEMS = NAV_ITEMS.slice(0, 4);
+const MORE_ITEMS = NAV_ITEMS.slice(4);
+
+const TITLES = {
+  '/dashboard': 'Home',
+  '/students': 'Students',
+  '/grades': 'Grades',
+  '/fees': 'Fees',
+  '/attendance': 'Attendance',
+  '/attendance/mark': 'Take attendance',
+  '/teachers': 'Teachers',
+  '/admins': 'Administrators',
+};
+const DETAIL_TITLES = { '/students': 'Student', '/teachers': 'Teacher' };
+
+// One step back: real history when there is some, otherwise a sensible parent screen.
+function useGoBack(fallback) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return () => {
+    if (location.key !== 'default') navigate(-1);
+    else navigate(fallback, { replace: true });
+  };
+}
 
 function AdminShell({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const path = location.pathname;
+  const detailOpen = new URLSearchParams(location.search).has('open');
+  const isSubPage = path === '/attendance/mark';
+  const showBack = detailOpen || isSubPage;
+  const title = detailOpen ? DETAIL_TITLES[path] || TITLES[path] : TITLES[path] || 'School SMS';
+  const moreActive = MORE_ITEMS.some((i) => path.startsWith(i.to));
+  const goBack = useGoBack(isSubPage ? '/attendance' : path);
+
+  function signOut() {
+    logout();
+    navigate('/login');
+  }
+
+  function goTo(to) {
+    setMoreOpen(false);
+    navigate(to, { replace: true });
+  }
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        Secondary School Management System
+        {showBack && (
+          <button className="app-bar-btn mobile-only" aria-label="Back" onClick={goBack}>
+            <Icon name="back" />
+          </button>
+        )}
+        <span className="app-title-full desktop-only">Secondary School Management System</span>
+        <span className="app-title-page mobile-only">{title}</span>
         <div className="spacer" />
-        <span className="muted">{user?.fullName}</span>
-        <button className="btn-secondary" style={{ marginLeft: 12 }} onClick={() => { logout(); navigate('/login'); }}>
+        <span className="muted desktop-only">{user?.fullName}</span>
+        <button className="btn-secondary desktop-only" style={{ marginLeft: 12 }} onClick={signOut}>
           Sign out
         </button>
       </header>
       <div className="app-body">
-        <nav className="nav-rail">
+        <nav className="nav-rail desktop-only">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -48,34 +101,101 @@ function AdminShell({ children }) {
               end={item.end}
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
-              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-icon"><Icon name={item.icon} /></span>
               <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
         <main className="app-content">{children}</main>
       </div>
+
+      <nav className="bottom-nav mobile-only" aria-label="Main">
+        {TAB_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            replace
+            className={({ isActive }) => `bottom-nav-item ${isActive && !moreOpen ? 'active' : ''}`}
+          >
+            <span className="pill"><Icon name={item.icon} /></span>
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+        <button
+          className={`bottom-nav-item ${moreActive || moreOpen ? 'active' : ''}`}
+          onClick={() => setMoreOpen(true)}
+        >
+          <span className="pill"><Icon name="more" /></span>
+          <span>More</span>
+        </button>
+      </nav>
+
+      {moreOpen && (
+        <>
+          <div className="sheet-backdrop" onClick={() => setMoreOpen(false)} />
+          <div className="sheet" role="dialog" aria-label="More">
+            <div className="sheet-handle" />
+            <div className="sheet-user">
+              <strong>{user?.fullName}</strong>
+              <div className="muted">Administrator</div>
+            </div>
+            {MORE_ITEMS.map((item) => (
+              <button key={item.to} className="sheet-item" onClick={() => goTo(item.to)}>
+                <Icon name={item.icon} />
+                <span>{item.label === 'Admins' ? 'Administrators' : item.label}</span>
+              </button>
+            ))}
+            <button className="sheet-item danger" onClick={signOut}>
+              <Icon name="logout" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 function TeacherShell({ children }) {
-  const { impersonating, user, stopImpersonation } = useAuth();
+  const { impersonating, user, stopImpersonation, logout } = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isHome = pathname === '/teacher';
+  const title = isHome ? 'My classes' : pathname.endsWith('/marks') ? 'Enter marks' : 'Attendance';
+  const goBack = useGoBack('/teacher');
 
   return (
-    <div className="app-shell">
+    <div className="app-shell no-bottom-nav">
+      <header className="app-header">
+        {!isHome && (
+          <button className="app-bar-btn mobile-only" aria-label="Back" onClick={goBack}>
+            <Icon name="back" />
+          </button>
+        )}
+        <span className="app-title-full desktop-only">Secondary School Management System — Teacher Portal</span>
+        <span className="app-title-page mobile-only">{title}</span>
+        <div className="spacer" />
+        {!impersonating && (
+          <button
+            className="app-bar-btn"
+            aria-label="Sign out"
+            title="Sign out"
+            onClick={() => { logout(); navigate('/teacher/login'); }}
+          >
+            <Icon name="logout" />
+          </button>
+        )}
+      </header>
       {impersonating && (
         <div className="preview-banner">
-          <span>Admin preview: you are viewing the portal as <strong>{user?.fullName}</strong></span>
+          <span>Admin preview: viewing as <strong>{user?.fullName}</strong></span>
           <button className="btn-secondary" onClick={stopImpersonation}>
             ← Back to admin
           </button>
         </div>
       )}
-      <header className="app-header">Secondary School Management System — Teacher Portal</header>
-      <main className="app-content" style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
-        {children}
-      </main>
+      <main className="app-content teacher-content">{children}</main>
     </div>
   );
 }

@@ -3,7 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import './index.css'
+import './mobile.css'
 import App from './App.jsx'
+import { initNative } from './native'
+
+initNative()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

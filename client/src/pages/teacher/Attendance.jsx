@@ -22,6 +22,7 @@ export default function TeacherAttendance() {
 
   const [date, setDate] = useState(todayIso());
   const [rows, setRows] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [marked, setMarked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,6 +34,7 @@ export default function TeacherAttendance() {
         if (cancelled) return;
         setMarked(sheet.marked);
         setRows(sheet.students.map((s) => ({ ...s, status: s.status || 'present' })));
+        setLoaded(true);
         setMessage('');
       })
       .catch((e) => !cancelled && setMessage(`Error: ${e.message}`));
@@ -79,7 +81,7 @@ export default function TeacherAttendance() {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="btn-secondary" onClick={() => navigate(backTo)}>← Back</button>
+        <button className="btn-secondary desktop-only" onClick={() => navigate(backTo)}>← Back</button>
         <h2>Attendance — {className}{section}</h2>
         <div className="spacer" />
         <input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
@@ -110,9 +112,10 @@ export default function TeacherAttendance() {
           </li>
         ))}
       </ul>
-      {rows.length === 0 && <p className="empty">No students in this class yet</p>}
+      {!loaded && <p className="empty">Loading...</p>}
+      {loaded && rows.length === 0 && <p className="empty">No students in this class yet</p>}
 
-      <div className="toolbar" style={{ marginTop: 16 }}>
+      <div className="toolbar action-bar" style={{ marginTop: 16 }}>
         <button
           className="btn-secondary"
           onClick={() => setRows((rs) => rs.map((r) => ({ ...r, status: 'present' })))}

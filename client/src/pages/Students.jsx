@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import useDetailSelection from '../hooks/useDetailSelection';
+import Icon from '../components/Icon';
 import { StudentsApi } from '../api';
 import { CLASS_LEVELS, BRANCHES, classRequiresBranch } from '../curriculum';
 import StudentForm from '../components/StudentForm';
@@ -10,7 +12,7 @@ export default function Students() {
   const [query, setQuery] = useState('');
   const [classFilter, setClassFilter] = useState('All');
   const [branchFilter, setBranchFilter] = useState('All');
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, selectStudent, closeDetail] = useDetailSelection();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [importMessage, setImportMessage] = useState('');
@@ -22,11 +24,6 @@ export default function Students() {
   }
 
   useEffect(refresh, []);
-
-  useEffect(() => {
-    const openId = searchParams.get('open');
-    if (openId) setSelectedId(openId);
-  }, [searchParams]);
 
   const branchFilterApplicable = classFilter === 'All' || classRequiresBranch(classFilter);
 
@@ -62,7 +59,7 @@ export default function Students() {
   async function remove(id) {
     if (!confirm('Delete this student and all related grade and fee records?')) return;
     await StudentsApi.remove(id);
-    setSelectedId(null);
+    closeDetail();
     refresh();
   }
 
@@ -98,7 +95,7 @@ export default function Students() {
   }
 
   return (
-    <div className="page split">
+    <div className={`page split ${selectedId ? 'has-detail' : ''}`}>
       <div className="master">
         <div className="master-toolbar">
           <input
@@ -106,7 +103,7 @@ export default function Students() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>+</button>
+          <button className="btn-primary fab" aria-label="Add student" onClick={() => { setEditing(null); setShowForm(true); }}><Icon name="add" /></button>
         </div>
         <div className="master-toolbar" style={{ borderTop: 'none' }}>
           <select
@@ -125,7 +122,7 @@ export default function Students() {
             </select>
           )}
         </div>
-        <div className="master-toolbar" style={{ borderTop: 'none' }}>
+        <div className="master-toolbar web-only" style={{ borderTop: 'none' }}>
           <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import CSV</button>
           <button className="btn-secondary" onClick={exportCsv}>Export CSV</button>
           <input
@@ -142,9 +139,10 @@ export default function Students() {
             <li
               key={s.id}
               className={`list-row selectable ${s.id === selectedId ? 'selected' : ''}`}
-              onClick={() => setSelectedId(s.id)}
+              onClick={() => selectStudent(s.id)}
             >
-              <div>
+              <div className="avatar avatar-placeholder">{s.fullName?.[0] || '?'}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <strong>{s.fullName}</strong>
                 <div className="muted">
                   {s.className}{s.section}{s.branch ? ` (${s.branch})` : ''} • {s.admissionNumber}
@@ -164,7 +162,7 @@ export default function Students() {
             onDelete={() => remove(selected.id)}
           />
         ) : (
-          <p className="empty center">Select a student to view details</p>
+          <p className="empty center">{selectedId ? 'Loading...' : 'Select a student to view details'}</p>
         )}
       </div>
       {showForm && (

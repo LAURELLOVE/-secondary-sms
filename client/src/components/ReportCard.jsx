@@ -73,7 +73,7 @@ export default function ReportCard({ studentId, term, academicYear, onClose }) {
         )}
         <div className="modal-actions no-print">
           <button type="button" className="btn-secondary" onClick={onClose}>Close</button>
-          {card && <button type="button" className="btn-primary" onClick={() => window.print()}>Print</button>}
+          {card && <button type="button" className="btn-primary web-only" onClick={() => window.print()}>Print</button>}
         </div>
       </div>
     </div>

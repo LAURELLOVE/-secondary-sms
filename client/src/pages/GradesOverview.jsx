@@ -33,7 +33,7 @@ export default function GradesOverview() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Grades overview</h2>
+        <h2 className="desktop-only">Grades overview</h2>
         <div className="spacer" />
         <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); setBranchFilter('All'); }}>
           <option value="All">All classes</option>
@@ -52,13 +52,13 @@ export default function GradesOverview() {
           {TERMS.map((t) => <option key={t}>{t}</option>)}
         </select>
         <button
-          className="btn-secondary"
+          className="btn-secondary web-only"
           onClick={() => GradesApi.exportCsv(term, year, classFilter === 'All' ? undefined : classFilter).catch((e) => alert(e.message))}
         >
           Export CSV
         </button>
       </div>
-      <table className="data-table">
+      <table className="data-table stack">
         <thead>
           <tr><th>Student</th><th>Class</th><th>Subjects recorded</th><th>Average</th><th>Grade</th></tr>
         </thead>
@@ -66,10 +66,10 @@ export default function GradesOverview() {
           {rows.map(({ student, report }) => (
             <tr key={student.id} onClick={() => navigate(`/students?open=${student.id}&tab=grades`)}>
               <td>{student.fullName}</td>
-              <td>{student.className}{student.section}{student.branch ? ` (${student.branch})` : ''}</td>
-              <td>{report.subjects.length}</td>
-              <td>{report.average.toFixed(1)}</td>
-              <td>{report.overallGrade}</td>
+              <td data-label="Class">{student.className}{student.section}{student.branch ? ` (${student.branch})` : ''}</td>
+              <td data-label="Subjects recorded">{report.subjects.length}</td>
+              <td data-label="Average">{report.average.toFixed(1)}</td>
+              <td data-label="Grade">{report.overallGrade}</td>
             </tr>
           ))}
         </tbody>

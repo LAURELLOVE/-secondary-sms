@@ -26,7 +26,7 @@ export default function Attendance() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Attendance</h2>
+        <h2 className="desktop-only">Attendance</h2>
         <div className="spacer" />
         <select value={className} onChange={(e) => setClassName(e.target.value)}>
           <option value="All">All classes</option>
@@ -51,7 +51,7 @@ export default function Attendance() {
       </div>
       {error && <p className="error-text">{error}</p>}
       <p className="muted">{data.daysMarked} class-day(s) with attendance recorded in this selection</p>
-      <table className="data-table">
+      <table className="data-table stack">
         <thead>
           <tr><th>Student</th><th>Class</th><th>Present</th><th>Late</th><th>Absent</th><th>Attendance</th></tr>
         </thead>
@@ -59,11 +59,11 @@ export default function Attendance() {
           {data.students.map((s) => (
             <tr key={s.id} onClick={() => navigate(`/students?open=${s.id}&tab=attendance`)}>
               <td>{s.fullName}</td>
-              <td>{s.className}{s.section}{s.branch ? ` (${s.branch})` : ''}</td>
-              <td>{s.present}</td>
-              <td>{s.late}</td>
-              <td>{s.absent}</td>
-              <td className={s.rate === null ? '' : s.rate < 75 ? 'error-text' : 'ok-text'}>
+              <td data-label="Class">{s.className}{s.section}{s.branch ? ` (${s.branch})` : ''}</td>
+              <td data-label="Present">{s.present}</td>
+              <td data-label="Late">{s.late}</td>
+              <td data-label="Absent">{s.absent}</td>
+              <td data-label="Attendance" className={s.rate === null ? '' : s.rate < 75 ? 'error-text' : 'ok-text'}>
                 {s.rate === null ? '—' : `${s.rate}%`}
               </td>
             </tr>

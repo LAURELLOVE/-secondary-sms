@@ -34,7 +34,7 @@ export default function TeacherLogin() {
       // No SMS step configured: the server signs the teacher straight in.
       if (res.token) {
         login(res.token, res.role, res.user);
-        navigate('/teacher');
+        navigate('/teacher', { replace: true });
         return;
       }
       setOtpRequestId(res.otpRequestId);
@@ -52,7 +52,7 @@ export default function TeacherLogin() {
     try {
       const { token, user, role } = await AuthApi.verifyOtp(otpRequestId, code);
       login(token, role, user);
-      navigate('/teacher');
+      navigate('/teacher', { replace: true });
     } catch (err) {
       setError(err.message);
     }
