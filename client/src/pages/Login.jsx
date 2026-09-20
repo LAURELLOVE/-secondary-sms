@@ -3,6 +3,7 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { AuthApi } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { APP_MODE } from '../appMode';
+import InstallPrompt from '../components/InstallPrompt';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -46,6 +47,7 @@ export default function Login() {
           </p>
         )}
         <p className="hint">Demo admin: admin / admin123</p>
+        <InstallPrompt />
       </form>
     </div>
   );

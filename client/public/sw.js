@@ -1,8 +1,8 @@
 // Minimal service worker: makes the app installable and lets the shell open
 // instantly / offline. Live data (the API, on another origin) is never cached,
 // so marks, fees and attendance are always fresh from the server.
-const CACHE = 'sms-shell-v1';
-const SHELL = ['/', '/index.html', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
+const CACHE = 'sms-shell-v2';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

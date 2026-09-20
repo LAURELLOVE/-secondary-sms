@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { APP_MODE } from '../appMode';
 
 const isStandalone = () =>
   window.Capacitor?.isNativePlatform?.() ||
@@ -37,7 +38,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="install-prompt no-print">
-      <button className="btn-secondary" onClick={install}>📲 Install app on your phone</button>
+      <button className="btn-secondary" onClick={install}>📲 Install {APP_MODE === 'admin' ? 'School Admin' : APP_MODE === 'teacher' ? 'School Teacher' : 'the app'} on your phone</button>
       {showHelp && (
         <p className="muted install-help">
           {isIos()

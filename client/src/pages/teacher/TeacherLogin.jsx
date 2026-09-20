@@ -4,6 +4,7 @@ import { AuthApi } from '../../api';
 import { useAuth } from '../../auth/AuthContext';
 import { normalizeCameroonPhone } from '../../phone';
 import { APP_MODE } from '../../appMode';
+import InstallPrompt from '../../components/InstallPrompt';
 
 export default function TeacherLogin() {
   const [step, setStep] = useState('credentials'); // credentials | otp
@@ -118,6 +119,7 @@ export default function TeacherLogin() {
             Are you an administrator? <Link to="/login">Sign in here</Link>
           </p>
         )}
+        <InstallPrompt />
       </form>
     </div>
   );
