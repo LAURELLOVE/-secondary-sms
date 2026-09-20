@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AdminStore, TeacherStore, OtpStore } from '../data/store.js';
 import { signToken } from '../middleware/auth.js';
 import { sendSms, isSmsLive, otpLoginEnabled } from '../services/sms/index.js';
+import { PhoneGateway } from '../services/sms/phoneGateway.js';
 import { normalizeCameroonPhone } from '../utils/phone.js';
 import { lockedForMinutes, recordFailure, clearFailures } from '../utils/loginLimiter.js';
 
@@ -11,7 +12,7 @@ const tooMany = (res, minutes) =>
   res.status(429).json({ error: `Too many failed attempts. Try again in ${minutes} minute(s).` });
 
 // Lets the sign-in pages know whether the SMS verification step is switched on.
-router.get('/config', (req, res) => res.json({ otpLogin: otpLoginEnabled }));
+router.get('/config', async (req, res) => res.json({ otpLogin: otpLoginEnabled || (await PhoneGateway.isEnabled()) }));
 
 router.post('/admin/login', async (req, res) => {
   const { username, password } = req.body;
@@ -49,17 +50,26 @@ router.post('/teacher/login', async (req, res) => {
   }
   clearFailures(key);
 
+  // "Phone SMS" (the administrator's own phone sends the texts) switches the code step on too.
+  const phoneSms = await PhoneGateway.isEnabled();
+
   // SMS verification is off: phone + access code is enough.
-  if (!otpLoginEnabled) {
+  if (!otpLoginEnabled && !phoneSms) {
     const token = signToken({ sub: teacher.id, role: 'teacher', name: teacher.fullName });
     return res.json({ token, user: TeacherStore.sanitize(teacher), role: 'teacher' });
+  }
+
+  // Don't hand out a code nobody can deliver: the sending phone must be switched on and online.
+  if (phoneSms && !(await PhoneGateway.isOnline())) {
+    return res.status(503).json({ error: 'SMS sending is offline right now. Please ask your administrator.' });
   }
 
   const { id: otpRequestId, code } = OtpStore.create(teacher.id);
   const message = `Your Secondary SMS login code is ${code}. It expires in 5 minutes.`;
 
   try {
-    await sendSms(teacher.phone, message);
+    if (phoneSms) await PhoneGateway.queue(teacher.phone, message);
+    else await sendSms(teacher.phone, message);
   } catch (err) {
     return res.status(502).json({ error: `Failed to send SMS: ${err.message}` });
   }
@@ -68,7 +78,8 @@ router.post('/teacher/login', async (req, res) => {
     otpRequestId,
     message: 'A verification code has been sent to your phone.',
     // Only present when no real SMS provider is configured, so the flow is still usable/demoable.
-    devOtp: isSmsLive ? undefined : code,
+    // (Never with phone SMS: the code must only ever arrive by text.)
+    devOtp: phoneSms || isSmsLive ? undefined : code,
   });
 });
 

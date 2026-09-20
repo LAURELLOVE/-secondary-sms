@@ -13,6 +13,7 @@ import MarkEntry from './pages/teacher/MarkEntry';
 import TeacherAttendance from './pages/teacher/Attendance';
 import Attendance from './pages/Attendance';
 import Admins from './pages/Admins';
+import PhoneSms from './pages/PhoneSms';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { useAuth } from './auth/AuthContext';
 import Icon from './components/Icon';
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { to: '/attendance', label: 'Attendance', icon: 'calendar' },
   { to: '/teachers', label: 'Teachers', icon: 'school' },
   { to: '/admins', label: 'Admins', icon: 'lock' },
+  { to: '/sms', label: 'Phone SMS', icon: 'sms' },
 ];
 // On a phone the first four are bottom tabs; the rest live under "More".
 const TAB_ITEMS = NAV_ITEMS.slice(0, 4);
@@ -39,6 +41,7 @@ const TITLES = {
   '/attendance/mark': 'Take attendance',
   '/teachers': 'Teachers',
   '/admins': 'Administrators',
+  '/sms': 'Phone SMS',
 };
 const DETAIL_TITLES = { '/students': 'Student', '/teachers': 'Teacher' };
 
@@ -245,6 +248,14 @@ export default function App() {
         element={
           <ProtectedRoute role="admin">
             <AdminShell><Attendance /></AdminShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sms"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminShell><PhoneSms /></AdminShell>
           </ProtectedRoute>
         }
       />

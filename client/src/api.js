@@ -65,6 +65,13 @@ export const AttendanceApi = {
   forStudent: (id) => request(`/attendance/student/${id}`),
 };
 
+export const SmsGatewayApi = {
+  status: () => request('/sms-gateway/status'),
+  setEnabled: (enabled) => request('/sms-gateway/settings', { method: 'PUT', body: JSON.stringify({ enabled }) }),
+  token: () => request('/sms-gateway/token', { method: 'POST' }),
+  test: (to) => request('/sms-gateway/test', { method: 'POST', body: JSON.stringify({ to }) }),
+};
+
 export const AdminsApi = {
   list: () => request('/admins'),
   create: (data) => request('/admins', { method: 'POST', body: JSON.stringify(data) }),
