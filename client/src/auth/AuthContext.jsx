@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { BASE_PATH } from '../appMode';
 
 const AuthContext = createContext(null);
 const BACKUP_KEY = 'sms_admin_backup';
@@ -39,7 +40,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('sms_token', token);
     localStorage.setItem('sms_role', role);
     localStorage.setItem('sms_user', JSON.stringify(user));
-    window.location.assign('/teacher');
+    window.location.assign(`${BASE_PATH}/teacher`);
   }
 
   function stopImpersonation() {
@@ -47,13 +48,13 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(BACKUP_KEY);
     if (!backup) {
       logout();
-      window.location.assign('/login');
+      window.location.assign(`${BASE_PATH}/login`);
       return;
     }
     localStorage.setItem('sms_token', backup.token);
     localStorage.setItem('sms_role', backup.role);
     localStorage.setItem('sms_user', JSON.stringify(backup.user));
-    window.location.assign('/teachers');
+    window.location.assign(`${BASE_PATH}/teachers`);
   }
 
   return (

@@ -6,11 +6,16 @@ import { IDENTITIES, manifestFor } from './app-identity.js'
 // for the build being made (VITE_APP_MODE = admin | teacher | web).
 function appIdentity(appMode) {
   const identity = IDENTITIES[appMode] || IDENTITIES.web
-  const manifest = JSON.stringify(manifestFor(identity), null, 2)
+  let base = '/'
+  const manifest = () => JSON.stringify(manifestFor(identity, base), null, 2)
   return {
     name: 'app-identity',
+    configResolved(config) {
+      base = config.base
+    },
     transformIndexHtml(html) {
       return html
+        .replaceAll('__APP_BASE__', base)
         .replaceAll('__APP_TITLE__', identity.title)
         .replaceAll('__APP_SHORT__', identity.short)
         .replaceAll('__APP_DESCRIPTION__', identity.description)
@@ -18,12 +23,12 @@ function appIdentity(appMode) {
         .replaceAll('__APP_ICON__', identity.icon)
     },
     generateBundle() {
-      this.emitFile({ type: 'asset', fileName: 'manifest.webmanifest', source: manifest })
+      this.emitFile({ type: 'asset', fileName: 'manifest.webmanifest', source: manifest() })
     },
     configureServer(server) {
       server.middlewares.use('/manifest.webmanifest', (req, res) => {
         res.setHeader('Content-Type', 'application/manifest+json')
-        res.end(manifest)
+        res.end(manifest())
       })
     },
   }

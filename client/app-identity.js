@@ -29,21 +29,21 @@ export const IDENTITIES = {
   },
 };
 
-export function manifestFor(identity) {
+export function manifestFor(identity, base = '/') {
   return {
     name: identity.title,
     short_name: identity.short,
     description: identity.description,
-    start_url: '/',
-    scope: '/',
+    start_url: base,
+    scope: base,
     display: 'standalone',
     orientation: 'any',
     background_color: identity.background,
     theme_color: identity.theme,
     icons: [
-      { src: `/icons/${identity.icon}-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: `/icons/${identity.icon}-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-      { src: `/icons/${identity.icon}.svg`, sizes: 'any', type: 'image/svg+xml' },
+      { src: `${base}icons/${identity.icon}-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: `${base}icons/${identity.icon}-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+      { src: `${base}icons/${identity.icon}.svg`, sizes: 'any', type: 'image/svg+xml' },
     ],
   };
 }

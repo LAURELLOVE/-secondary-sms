@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening...</title>
+    <script>
+      // GitHub Pages has no "always serve index.html" rule. If someone reloads or opens a deep link such as
+      // /<repo>/admin/students, send them to that app's start page with the wanted path in ?__p=;
+      // the app (src/main.jsx) puts the address back to what it was.
+      var parts = location.pathname.split('/'); // ['', '<repo>', 'admin', 'students']
+      var root = '/' + parts[1] + '/';
+      if (parts[2] === 'admin' || parts[2] === 'teacher') {
+        var rest = '/' + parts.slice(3).join('/') + location.search + location.hash;
+        location.replace(root + parts[2] + '/?__p=' + encodeURIComponent(rest));
+      } else {
+        location.replace(root);
+      }
+    </script>
+  </head>
+  <body style="font-family: system-ui, sans-serif; padding: 24px">
+    <p>Opening the app... <a href="./">Tap here if nothing happens</a>.</p>
+  </body>
+</html>

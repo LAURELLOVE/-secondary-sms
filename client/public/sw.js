@@ -2,7 +2,9 @@
 // instantly / offline. Live data (the API, on another origin) is never cached,
 // so marks, fees and attendance are always fresh from the server.
 const CACHE = 'sms-shell-v2';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
+// The app may live in a sub-folder (GitHub Pages), so work out the folder from the worker's own scope.
+const BASE = new URL(self.registration.scope).pathname;
+const SHELL = [BASE, `${BASE}index.html`, `${BASE}manifest.webmanifest`];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -27,10 +29,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('/index.html', copy));
+          caches.open(CACHE).then((c) => c.put(`${BASE}index.html`, copy));
           return res;
         })
-        .catch(() => caches.match('/index.html')),
+        .catch(() => caches.match(`${BASE}index.html`)),
     );
     return;
   }

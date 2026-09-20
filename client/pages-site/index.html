@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#312e81" />
+    <title>School apps</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        padding: 24px 20px;
+        font-family: system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;
+        color: #fff;
+        text-align: center;
+        background: linear-gradient(160deg, #312e81 0%, #4338ca 45%, #047857 100%);
+      }
+      h1 { margin: 0 0 6px; font-size: 28px; }
+      p { margin: 0; opacity: 0.85; }
+      .cards { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 420px; }
+      a.card {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        column-gap: 16px;
+        align-items: center;
+        text-align: left;
+        padding: 18px 20px;
+        border-radius: 20px;
+        background: #fff;
+        text-decoration: none;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+      }
+      a.card img { grid-row: span 2; width: 56px; height: 56px; border-radius: 14px; }
+      a.card strong { font-size: 19px; }
+      a.card span { font-size: 14px; color: #64748b; }
+      a.admin strong { color: #312e81; }
+      a.teacher strong { color: #064e3b; }
+      .how { max-width: 420px; font-size: 14px; line-height: 1.5; background: rgba(255, 255, 255, 0.14); border-radius: 16px; padding: 14px 16px; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>School apps</h1>
+      <p>Choose your app</p>
+    </div>
+    <div class="cards">
+      <a class="card admin" href="admin/">
+        <img src="admin/icons/admin-192.png" alt="" />
+        <strong>School Admin</strong>
+        <span>Students, grades, fees, attendance, teachers</span>
+      </a>
+      <a class="card teacher" href="teacher/">
+        <img src="teacher/icons/teacher-192.png" alt="" />
+        <strong>School Teacher</strong>
+        <span>Enter marks and take attendance</span>
+      </a>
+    </div>
+    <div class="how">
+      <strong>Put it on your home screen</strong><br />
+      Open your app, tap the <b>Share</b> button (iPhone) or the <b>&#8942; menu</b> (Android), then choose <b>Add to Home Screen</b>.
+    </div>
+  </body>
+</html>

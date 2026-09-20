@@ -1,6 +1,8 @@
 // In local dev, relative paths work via Vite's dev proxy (see vite.config.js).
 // In production the frontend and backend are separate Render services, so
 // VITE_API_URL (set at build time) points straight at the deployed backend.
+import { BASE_PATH } from './appMode';
+
 const API_ORIGIN = import.meta.env.VITE_API_URL || '';
 export const SERVER_ORIGIN = API_ORIGIN;
 const BASE_URL = `${API_ORIGIN}/api`;
@@ -24,7 +26,7 @@ async function request(path, options = {}) {
     localStorage.removeItem('sms_role');
     localStorage.removeItem('sms_user');
     localStorage.removeItem('sms_admin_backup');
-    window.location.href = '/login';
+    window.location.href = `${BASE_PATH}/login`;
     throw new Error('Session expired, please log in again');
   }
   if (!res.ok) {
